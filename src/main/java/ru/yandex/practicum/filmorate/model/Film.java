@@ -27,7 +27,7 @@ public class Film {
     public static void validateFilm(Film film) {
         if (film.getName() == null || film.getName().isBlank()) {
             log.warn("Ошибка валидации: Название не может быть пустым");
-            throw new ValidationException(Optional.ofNullable(film.getName()).toString() ,
+            throw new ValidationException(Optional.ofNullable(film.getName()).toString(),
                     "Название не может быть пустым");
         }
 
