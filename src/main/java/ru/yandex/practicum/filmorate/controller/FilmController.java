@@ -1,107 +1,83 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exceptions.ConditionsNotMetException;
-import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
-import java.time.LocalDate;
-import java.time.Month;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/films")
 @Slf4j
 public class FilmController {
-    private final Map<Integer, Film> films = new HashMap<>();
+    private final InMemoryFilmStorage inMemoryFilmStorage;
+    private final FilmService filmService;
+    private final InMemoryUserStorage inMemoryUserStorage;
+
+    @Autowired
+    public FilmController(InMemoryFilmStorage inMemoryFilmStorage, FilmService filmService,
+                          InMemoryUserStorage inMemoryUserStorage) {
+        this.inMemoryFilmStorage = inMemoryFilmStorage;
+        this.filmService = filmService;
+        this.inMemoryUserStorage = inMemoryUserStorage;
+    }
 
     @GetMapping
+    @ResponseStatus(HttpStatus.OK)
     public Collection<Film> findAll() {
-        log.info("Запрос на получения списка всех фильмов {}", films);
-        return films.values();
+        log.info("Запрос на получения списка всех фильмов {}", inMemoryFilmStorage.getFilms());
+        return inMemoryFilmStorage.getFilms().values();
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public Film create(@RequestBody Film film) {
-        log.info("Запрос на создание фильма {}", film);
-        if (film.getName() == null || film.getName().isBlank()) {
-            log.warn("Ошибка валидации: Название не может быть пустым");
-            throw new ValidationException("Название не может быть пустым");
-        }
-
-        if (film.getDescription().length() > 200) {
-            log.warn("Ошибка валидации: Объем описания не более 200 символов");
-            throw new ValidationException("Объем описания не более 200 символов");
-        }
-
-        if (film.getReleaseDate().isBefore(LocalDate.of(1895, Month.DECEMBER, 28))) {
-            log.warn("Ошибка валидации: Дата релиза должна быть не ранее 28.12.1895");
-            throw new ValidationException("Дата релиза должна быть не ранее 28.12.1895");
-        }
-
-        if (film.getDuration() <= 0) {
-            log.warn("Ошибка валидации: Длительность фильма не может быть отрицательной или равной нулю");
-            throw new ValidationException("Длительность фильма не может быть отрицательной или равной нулю");
-        }
-
-        film.setId(getNextId());
-        films.put(film.getId(), film);
-        log.info("Фильм с ID - {} успешно создан", film.getId());
-        return film;
+        return inMemoryFilmStorage.create(film);
     }
 
     @PutMapping
+    @ResponseStatus(HttpStatus.OK)
     public Film update(@RequestBody Film newFilm) {
-        log.info("Запрос на обновление фильма {}", newFilm);
-        if (newFilm.getId() == null) {
-            log.warn("ID должен быть указан");
-            throw new ConditionsNotMetException("Id должен быть указан");
-        }
-        if (films.containsKey(newFilm.getId())) {
-            Film oldFilm = films.get(newFilm.getId());
-
-            if (newFilm.getName() == null || newFilm.getName().isBlank()) {
-                log.warn("Ошибка валидации: Название не может быть пустым");
-                throw new ValidationException("Название не может быть пустым");
-            }
-
-            if (newFilm.getDescription().length() > 200) {
-                log.warn("Ошибка валидации: Объем описания не более 200 символов");
-                throw new ValidationException("Объем описания не более 200 символов");
-            }
-
-            if (newFilm.getReleaseDate().isBefore(LocalDate.of(1895, Month.DECEMBER, 28))) {
-                log.warn("Ошибка валидации: Дата релиза должна быть не ранее 28.12.1895");
-                throw new ValidationException("Дата релиза должна быть не ранее 28.12.1895");
-            }
-
-            if (newFilm.getDuration() <= 0) {
-                log.warn("Ошибка валидации: Длительность фильма не может быть отрицательной или равной нулю");
-                throw new ValidationException("Длительность фильма не может быть отрицательной или равной нулю");
-            }
-
-            oldFilm.setName(newFilm.getName());
-            oldFilm.setDescription(newFilm.getDescription());
-            oldFilm.setReleaseDate(newFilm.getReleaseDate());
-            oldFilm.setDuration(newFilm.getDuration());
-            log.info("Фильм с ID {} успешно обновлен", newFilm.getId());
-
-            return oldFilm;
-        }
-        log.warn("Фильм с ID {} не найден", newFilm.getId());
-        throw new NotFoundException(String.format("Фильм с ID = %d не найден", newFilm.getId()));
+        return inMemoryFilmStorage.update(newFilm);
     }
 
-    private Integer getNextId() {
-        Integer currentMaxId = films.keySet()
-                .stream()
-                .mapToInt(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public Optional<Film> findById(@PathVariable Integer id) {
+        return Optional.ofNullable(inMemoryFilmStorage.getFilms().get(id));
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public Film delete(@PathVariable Integer id) {
+        return inMemoryFilmStorage.delete(inMemoryFilmStorage.getFilms().get(id));
+    }
+
+    @PutMapping("/{id}/like/{userId}")
+    @ResponseStatus(HttpStatus.OK)
+    public Film addLike(@PathVariable Integer id,
+                        @PathVariable Integer userId) {
+        filmService.addLike(inMemoryFilmStorage.getFilmById(id), inMemoryUserStorage.getUserById(userId));
+        return inMemoryFilmStorage.getFilms().get(id);
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    @ResponseStatus(HttpStatus.OK)
+    public Film deleteLike(@PathVariable Integer id,
+                           @PathVariable Integer userId) {
+        filmService.deleteLike(inMemoryFilmStorage.getFilmById(id), inMemoryUserStorage.getUserById(userId));
+        return inMemoryFilmStorage.getFilms().get(id);
+    }
+
+    @GetMapping("/popular")
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<Film> findCountFilms(@RequestParam(defaultValue = "10") int count) {
+        return filmService.getPopularFilms(count);
     }
 }
