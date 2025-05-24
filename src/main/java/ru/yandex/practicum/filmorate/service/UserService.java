@@ -34,7 +34,7 @@ public class UserService {
         user2.getFriends().remove(user1.getId());
     }
 
-    public List<User> getCommonFriends (User user1, User user2) {
+    public List<User> getCommonFriends(User user1, User user2) {
         Set<Integer> commonFriends = new HashSet<>(user1.getFriends());
 
         commonFriends.retainAll(user2.getFriends());
