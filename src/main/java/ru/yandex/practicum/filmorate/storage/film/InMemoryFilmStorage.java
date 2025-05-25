@@ -31,8 +31,8 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Film update(Film newFilm) {
         log.info("Запрос на обновление фильма {}", newFilm);
         if (newFilm.getId() == null) {
-            log.warn("ID должен быть указан");
-            throw new ConditionsNotMetException("ID должен быть указан");
+            log.warn("ID фильма должен быть указан");
+            throw new ConditionsNotMetException("ID фильма должен быть указан");
         }
         if (films.containsKey(newFilm.getId())) {
             Film oldFilm = films.get(newFilm.getId());
@@ -55,8 +55,8 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Film delete(Film film) {
         log.info("Запрос на удаление фильма {}", film);
         if (film.getId() == null) {
-            log.warn("ID должен быть указан");
-            throw new ConditionsNotMetException("ID должен быть указан");
+            log.warn("ID фильма должен быть указан");
+            throw new ConditionsNotMetException("ID фильма должен быть указан");
         }
 
         if (films.containsKey(film.getId())) {

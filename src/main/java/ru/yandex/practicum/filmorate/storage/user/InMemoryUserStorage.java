@@ -39,8 +39,8 @@ public class InMemoryUserStorage implements UserStorage {
     public User update(User newUser) {
         log.info("Запрос на обновление пользователя {}", newUser);
         if (newUser.getId() == null) {
-            log.warn("ID должен быть указан");
-            throw new ConditionsNotMetException("Id должен быть указан");
+            log.warn("ID пользователя должен быть указан");
+            throw new ConditionsNotMetException("ID пользователя должен быть указан");
         }
         if (users.containsKey(newUser.getId())) {
             User oldUser = users.get(newUser.getId());
@@ -69,8 +69,8 @@ public class InMemoryUserStorage implements UserStorage {
     public User delete(User user) {
         log.info("Запрос на удаление пользователя {}", user);
         if (user.getId() == null) {
-            log.warn("ID должен быть указан");
-            throw new ConditionsNotMetException("ID должен быть указан");
+            log.warn("ID пользователя должен быть указан");
+            throw new ConditionsNotMetException("ID пользователя должен быть указан");
         }
 
         if (users.containsKey(user.getId())) {

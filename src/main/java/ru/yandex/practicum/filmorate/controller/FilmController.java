@@ -59,18 +59,18 @@ public class FilmController {
         return inMemoryFilmStorage.delete(inMemoryFilmStorage.getFilms().get(id));
     }
 
-    @PutMapping("/{id}/like/{userId}")
+    @PutMapping("/{id}/like/{user-id}")
     @ResponseStatus(HttpStatus.OK)
     public Film addLike(@PathVariable Integer id,
-                        @PathVariable Integer userId) {
+                        @PathVariable("user-id") Integer userId) {
         filmService.addLike(inMemoryFilmStorage.getFilmById(id), inMemoryUserStorage.getUserById(userId));
         return inMemoryFilmStorage.getFilms().get(id);
     }
 
-    @DeleteMapping("/{id}/like/{userId}")
+    @DeleteMapping("/{id}/like/{user-id}")
     @ResponseStatus(HttpStatus.OK)
     public Film deleteLike(@PathVariable Integer id,
-                           @PathVariable Integer userId) {
+                           @PathVariable("user-id") Integer userId) {
         filmService.deleteLike(inMemoryFilmStorage.getFilmById(id), inMemoryUserStorage.getUserById(userId));
         return inMemoryFilmStorage.getFilms().get(id);
     }

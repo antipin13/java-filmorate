@@ -47,18 +47,18 @@ public class UserController {
         return inMemoryUserStorage.delete(inMemoryUserStorage.getUserById(id));
     }
 
-    @PutMapping("/{id}/friends/{friendId}")
+    @PutMapping("/{id}/friends/{friend-id}")
     @ResponseStatus(HttpStatus.OK)
     public User addFriend(@PathVariable Integer id,
-                        @PathVariable Integer friendId) {
+                        @PathVariable("friend-id") Integer friendId) {
         userService.addFriend(inMemoryUserStorage.getUserById(id), inMemoryUserStorage.getUserById(friendId));
         return inMemoryUserStorage.getUserById(id);
     }
 
-    @DeleteMapping("/{id}/friends/{friendId}")
+    @DeleteMapping("/{id}/friends/{friend-id}")
     @ResponseStatus(HttpStatus.OK)
     public User deleteFriend(@PathVariable Integer id,
-                             @PathVariable Integer friendId) {
+                             @PathVariable("friend-id") Integer friendId) {
         userService.deleteFriend(inMemoryUserStorage.getUserById(id), inMemoryUserStorage.getUserById(friendId));
         return inMemoryUserStorage.getUserById(id);
     }
@@ -69,10 +69,10 @@ public class UserController {
         return userService.getUserFriends(inMemoryUserStorage.getUserById(id));
     }
 
-    @GetMapping("/{id}/friends/common/{otherId}")
+    @GetMapping("/{id}/friends/common/{other-id}")
     @ResponseStatus(HttpStatus.OK)
     public List<User> getCommonFriends(@PathVariable Integer id,
-                                       @PathVariable Integer otherId) {
+                                       @PathVariable("other-id") Integer otherId) {
         return userService.getCommonFriends(inMemoryUserStorage.getUserById(id),
                 inMemoryUserStorage.getUserById(otherId));
     }
