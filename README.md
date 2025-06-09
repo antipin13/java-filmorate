@@ -10,7 +10,7 @@ Template repository for Filmorate project.
 - Таблица likes с полями: ID (PK), ID фильма (FK), ID пользователя (FK)
 - Таблица friends с полями: ID пользователя (FK), ID друга (FK), статус дружбы
 
-![Диаграмма БД](images/Diagram.png)
+![Диаграмма БД](images/newDiagram.png)
 
 # Примеры запросов
 
