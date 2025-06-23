@@ -1,79 +1,85 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.dal.dto.*;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 
 @RestController
 @RequestMapping("/users")
+@RequiredArgsConstructor
 @Slf4j
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserController {
-    private final InMemoryUserStorage inMemoryUserStorage;
-    private final UserService userService;
-
-    @Autowired
-    public UserController(InMemoryUserStorage inMemoryUserStorage, UserService userService) {
-        this.inMemoryUserStorage = inMemoryUserStorage;
-        this.userService = userService;
-    }
+    final UserService userService;
 
     @GetMapping
-    public Collection<User> findAll() {
-        log.info("Запрос на получение списка всех пользователей {}", inMemoryUserStorage.getUsers());
-        return inMemoryUserStorage.getUsers().values();
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<UserDto> findAll() {
+        log.info("Запрос на получения списка всех пользователей");
+        return userService.getUsers();
     }
 
     @PostMapping
-    public User create(@RequestBody User user) {
-        return inMemoryUserStorage.create(user);
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserDto create(@RequestBody NewUserRequest request) {
+        log.info("Запрос на добавление пользователя {}", request);
+        return userService.createUser(request);
     }
 
     @PutMapping
-    public User update(@RequestBody User newUser) {
-        return inMemoryUserStorage.update(newUser);
+    @ResponseStatus(HttpStatus.OK)
+    public UserDto update(@RequestBody UpdateUserRequest request) {
+        log.info("Запрос на обновление пользователя {}", request);
+        return userService.updateUser(request);
+    }
+
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public Optional<UserDto> findById(@PathVariable Long id) {
+        return Optional.ofNullable(userService.getUserById(id));
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public User delete(@PathVariable Integer id) {
-        return inMemoryUserStorage.delete(inMemoryUserStorage.getUserById(id));
+    public boolean delete(@PathVariable Long id) {
+        return userService.deleteUser(id);
     }
 
     @PutMapping("/{id}/friends/{friend-id}")
     @ResponseStatus(HttpStatus.OK)
-    public User addFriend(@PathVariable Integer id,
-                        @PathVariable("friend-id") Integer friendId) {
-        userService.addFriend(inMemoryUserStorage.getUserById(id), inMemoryUserStorage.getUserById(friendId));
-        return inMemoryUserStorage.getUserById(id);
-    }
+    public UserDto addFriend(@PathVariable Long id,
+                             @PathVariable("friend-id") Long friendId) {
 
-    @DeleteMapping("/{id}/friends/{friend-id}")
-    @ResponseStatus(HttpStatus.OK)
-    public User deleteFriend(@PathVariable Integer id,
-                             @PathVariable("friend-id") Integer friendId) {
-        userService.deleteFriend(inMemoryUserStorage.getUserById(id), inMemoryUserStorage.getUserById(friendId));
-        return inMemoryUserStorage.getUserById(id);
+        return userService.addFriend(id, friendId);
     }
 
     @GetMapping("/{id}/friends")
     @ResponseStatus(HttpStatus.OK)
-    public List<User> getUserFriends(@PathVariable Integer id) {
-        return userService.getUserFriends(inMemoryUserStorage.getUserById(id));
+    public List<UserDto> getUserFriends(@PathVariable Long id) {
+        return userService.getFriends(id);
     }
 
-    @GetMapping("/{id}/friends/common/{other-id}")
+    @DeleteMapping("/{id}/friends/{friend-id}")
     @ResponseStatus(HttpStatus.OK)
-    public List<User> getCommonFriends(@PathVariable Integer id,
-                                       @PathVariable("other-id") Integer otherId) {
-        return userService.getCommonFriends(inMemoryUserStorage.getUserById(id),
-                inMemoryUserStorage.getUserById(otherId));
+    public void removeFriend(@PathVariable Long id,
+                             @PathVariable("friend-id") Long friendId) {
+        userService.removeFriend(id, friendId);
+    }
+
+    @GetMapping("/{id}/friends/common/{friend-id}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<UserDto> getCommonFriends(@PathVariable Long id,
+                                          @PathVariable("friend-id") Long friendId) {
+        return userService.getCommonFriend(id, friendId);
     }
 }
