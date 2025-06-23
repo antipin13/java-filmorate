@@ -24,7 +24,9 @@ public class Film {
     Rating mpa;
     List<Genre> genres = new ArrayList<>();
 
-    public Film() {}
+    public Film() {
+
+    }
 
     public static void validateFilm(Film film) {
         if (film.getName() == null || film.getName().isBlank()) {
