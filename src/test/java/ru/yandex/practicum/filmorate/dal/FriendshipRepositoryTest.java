@@ -11,9 +11,6 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import ru.yandex.practicum.filmorate.dal.mappers.FilmRowMapper;
-import ru.yandex.practicum.filmorate.dal.mappers.GenreRowMapper;
-import ru.yandex.practicum.filmorate.dal.mappers.RatingRowMapper;
 import ru.yandex.practicum.filmorate.dal.mappers.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.User;
 
