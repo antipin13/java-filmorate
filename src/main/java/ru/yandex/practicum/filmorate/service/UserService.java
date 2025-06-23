@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -89,6 +90,10 @@ public class UserService {
         }
 
         friendshipRepository.addFriendship(userId, friendId);
+
+        if (user.getFriends() == null) {
+            user.setFriends(new ArrayList<>());
+        }
         user.getFriends().add(friend);
 
         return UserMapper.mapToUserDto(user);

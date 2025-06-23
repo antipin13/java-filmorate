@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.model;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
-import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
@@ -14,7 +13,6 @@ import java.util.*;
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Slf4j
-@ToString(exclude = {"friendships"})
 @Builder
 public class User {
     Long id;
@@ -22,7 +20,7 @@ public class User {
     String login;
     String name;
     LocalDate birthday;
-    List<User> friends = new ArrayList<>();
+    List<User> friends;
 
     public static void validateUser(User user) {
         if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
