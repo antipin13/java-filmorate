@@ -41,12 +41,12 @@ public class BaseRepository<T> {
     protected Long insert(String query, Object... params) {
         GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
         jdbc.update(connection -> {
-            PreparedStatement ps = connection
+            PreparedStatement preparedStatement = connection
                     .prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            for (int idx = 0; idx < params.length; idx++) {
-                ps.setObject(idx + 1, params[idx]);
+            for (int i = 0; i < params.length; i++) {
+                preparedStatement.setObject(i + 1, params[i]);
             }
-            return ps;
+            return preparedStatement;
         }, keyHolder);
 
         Long id = keyHolder.getKey() != null ? keyHolder.getKey().longValue() : null;
