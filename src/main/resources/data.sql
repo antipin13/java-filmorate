@@ -1,0 +1,11 @@
+MERGE INTO genre (name) KEY (name) VALUES ('Комедия');
+MERGE INTO genre (name) KEY (name) VALUES ('Драма');
+MERGE INTO genre (name) KEY (name) VALUES ('Мультфильм');
+MERGE INTO genre (name) KEY (name) VALUES ('Триллер');
+MERGE INTO genre (name) KEY (name) VALUES ('Документальный');
+MERGE INTO genre (name) KEY (name) VALUES ('Боевик');
+MERGE INTO rating (name) KEY (name) VALUES ('G');
+MERGE INTO rating (name) KEY (name) VALUES ('PG');
+MERGE INTO rating (name) KEY (name) VALUES ('PG-13');
+MERGE INTO rating (name) KEY (name) VALUES ('R');
+MERGE INTO rating (name) KEY (name) VALUES ('NC-17');

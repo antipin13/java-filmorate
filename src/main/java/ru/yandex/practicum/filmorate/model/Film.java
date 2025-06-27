@@ -1,28 +1,32 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.AccessLevel;
-import lombok.Data;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Slf4j
+@Builder
+@AllArgsConstructor
 public class Film {
-    Integer id;
+    Long id;
     String name;
     String description;
     LocalDate releaseDate;
     Integer duration;
-    Set<Integer> likes = new HashSet<>();
+    Rating mpa;
+    List<Genre> genres = new ArrayList<>();
+
+    public Film() {
+
+    }
 
     public static void validateFilm(Film film) {
         if (film.getName() == null || film.getName().isBlank()) {
