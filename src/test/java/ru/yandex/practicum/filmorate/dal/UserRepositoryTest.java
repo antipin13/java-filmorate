@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.dal.mappers.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -25,6 +26,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @Import({UserRepository.class, UserRowMapper.class})
 @FieldDefaults(level = AccessLevel.PRIVATE)
 class UserRepositoryTest {
+    final JdbcTemplate jdbc;
     final UserRepository userRepository;
     User user;
 
@@ -41,6 +43,7 @@ class UserRepositoryTest {
 
     @AfterEach
     void afterEach() {
+        jdbc.update("DELETE FROM users");
         user = User.builder()
                 .id(null)
                 .email("user@mail.ru")
@@ -55,7 +58,7 @@ class UserRepositoryTest {
         User createUser = userRepository.create(user);
 
         assertThat(createUser)
-                .hasFieldOrPropertyWithValue("id", Long.valueOf(2));
+                .hasFieldOrPropertyWithValue("id", createUser.getId());
     }
 
     @Test

@@ -7,7 +7,6 @@ import ru.yandex.practicum.filmorate.dal.RatingRepository;
 import ru.yandex.practicum.filmorate.dal.dto.RatingDto;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.RatingMapper;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
