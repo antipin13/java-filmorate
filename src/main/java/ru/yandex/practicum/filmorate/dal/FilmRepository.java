@@ -107,6 +107,18 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
         return delete(DELETE_QUERY, film.getId());
     }
 
+    public boolean deleteFilmWithRelations(Long filmId) {
+        // Удаляем лайки, связанные с фильмом
+        String deleteLikesSql = "DELETE FROM likes WHERE film_id = ?";
+        jdbc.update(deleteLikesSql, filmId);
+        // Удаляем связи с жанрами
+        String deleteGenresSql = "DELETE FROM film_genres WHERE film_id = ?";
+        jdbc.update(deleteGenresSql, filmId);
+        // Удаляем сам фильм
+        return delete(DELETE_QUERY, filmId);
+    }
+
+
     @Override
     public Optional<Film> getFilmById(Long filmId) {
         return findOne(FIND_BY_ID_QUERY, filmId);

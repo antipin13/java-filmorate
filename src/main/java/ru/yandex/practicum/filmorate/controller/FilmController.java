@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dal.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dal.dto.NewFilmRequest;
@@ -48,10 +49,11 @@ public class FilmController {
         return Optional.ofNullable(filmService.getFilmById(id));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{filmId}")
     @ResponseStatus(HttpStatus.OK)
-    public boolean delete(@PathVariable Long id) {
-        return filmService.deleteFilm(id);
+    public ResponseEntity<Void> deleteFilm(@PathVariable Long filmId) {
+        filmService.deleteFilmAndRelations(filmId);
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}/like/{user-id}")

@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dal.FriendshipRepository;
+import ru.yandex.practicum.filmorate.dal.UserRepository;
 import ru.yandex.practicum.filmorate.dal.dto.*;
 import ru.yandex.practicum.filmorate.exceptions.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
@@ -15,7 +16,6 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -67,14 +67,16 @@ public class UserService {
         return UserMapper.mapToUserDto(existingUser);
     }
 
-    public boolean deleteUser(Long id) {
-        Optional<User> userOpt = userStorage.getUserById(id);
-        if (userOpt.isPresent()) {
-            return userStorage.delete(userOpt.get());
-        } else {
-            throw new NotFoundException(String.format("Пользователь с ID - %d не найден", id));
+    public void deleteUser(Long userId) {
+        // Проверка существования пользователя
+        if (userStorage.getUserById(userId).isEmpty()) {
+            throw new NotFoundException("Пользователь не найден");
         }
+        // Удаление пользователя и связанных данных
+        ((UserRepository) userStorage).deleteUserById(userId);
     }
+
+
 
     public UserDto addFriend(Long userId, Long friendId) {
         User user = userStorage.getUserById(userId)

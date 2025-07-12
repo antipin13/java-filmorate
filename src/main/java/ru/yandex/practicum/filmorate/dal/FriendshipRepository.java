@@ -45,4 +45,9 @@ public class FriendshipRepository {
     public List<Long> findFriendsByUser(Long userId) {
         return jdbc.queryForList(FIND_FRIENDS_BY_USER, Long.class, userId);
     }
+
+    public void removeAllFriendshipsByUserId(Long userId) {
+        String sql = "DELETE FROM friendships WHERE user_id = ? OR friend_id = ?";
+        jdbc.update(sql, userId, userId);
+    }
 }
