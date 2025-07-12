@@ -50,9 +50,9 @@ public class UserController {
         return Optional.ofNullable(userService.getUserById(id));
     }
 
-    @DeleteMapping("/{userId}")
+    @DeleteMapping("/{user-id}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
+    public ResponseEntity<Void> deleteUser(@PathVariable ("user-id") Long userId) {
         userService.deleteUser(userId);
         return ResponseEntity.noContent().build();
     }

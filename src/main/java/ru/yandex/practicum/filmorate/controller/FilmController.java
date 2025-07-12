@@ -49,9 +49,9 @@ public class FilmController {
         return Optional.ofNullable(filmService.getFilmById(id));
     }
 
-    @DeleteMapping("/{filmId}")
+    @DeleteMapping("/{film-id}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Void> deleteFilm(@PathVariable Long filmId) {
+    public ResponseEntity<Void> deleteFilm(@PathVariable ("film-id") Long filmId) {
         filmService.deleteFilmAndRelations(filmId);
         return ResponseEntity.noContent().build();
     }
