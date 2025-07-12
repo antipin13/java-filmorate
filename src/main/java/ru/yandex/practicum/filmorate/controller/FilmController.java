@@ -78,9 +78,9 @@ public class FilmController {
         return filmService.getPopularFilms(count);
     }
 
-    @GetMapping("/director/{directorId}")
+    @GetMapping("/director/{director-id}")
     @ResponseStatus(HttpStatus.OK)
-    public Collection<FilmDto> findFilmsByDirectorId(@PathVariable Long directorId,
+    public Collection<FilmDto> findFilmsByDirectorId(@PathVariable("director-id") Long directorId,
                                                      @RequestParam String sortBy) {
         SortBy sortByEnum;
         try {
