@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
+import ru.yandex.practicum.filmorate.dal.mappers.DirectorRowMapper;
 import ru.yandex.practicum.filmorate.dal.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.dal.mappers.GenreRowMapper;
 import ru.yandex.practicum.filmorate.dal.mappers.RatingRowMapper;
@@ -26,7 +27,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Import({FilmRepository.class, FilmRowMapper.class, GenreRepository.class, GenreRowMapper.class,
-        RatingRepository.class, RatingRowMapper.class})
+        RatingRepository.class, RatingRowMapper.class, DirectorRepository.class, DirectorRowMapper.class})
 @FieldDefaults(level = AccessLevel.PRIVATE)
 class GenreRepositoryTest {
     final GenreRepository genreRepository;
