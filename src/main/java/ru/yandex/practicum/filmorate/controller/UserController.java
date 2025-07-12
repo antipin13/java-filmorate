@@ -82,4 +82,10 @@ public class UserController {
                                           @PathVariable("friend-id") Long friendId) {
         return userService.getCommonFriend(id, friendId);
     }
+
+    @GetMapping("/{id}/recommendations")
+    @ResponseStatus(HttpStatus.OK)
+    public List<FilmDto> getRecommendations(@PathVariable Long id) {
+        return userService.getRecommendations(id);
+    }
 }
