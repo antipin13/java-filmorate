@@ -3,11 +3,12 @@ package ru.yandex.practicum.filmorate.dal.dto;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
-
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -18,4 +19,5 @@ public class NewFilmRequest {
     Integer duration;
     Rating mpa;
     List<Genre> genres;
+    Set<Director> directors;
 }

@@ -1,11 +1,22 @@
-MERGE INTO genre (name) KEY (name) VALUES ('Комедия');
-MERGE INTO genre (name) KEY (name) VALUES ('Драма');
-MERGE INTO genre (name) KEY (name) VALUES ('Мультфильм');
-MERGE INTO genre (name) KEY (name) VALUES ('Триллер');
-MERGE INTO genre (name) KEY (name) VALUES ('Документальный');
-MERGE INTO genre (name) KEY (name) VALUES ('Боевик');
-MERGE INTO rating (name) KEY (name) VALUES ('G');
-MERGE INTO rating (name) KEY (name) VALUES ('PG');
-MERGE INTO rating (name) KEY (name) VALUES ('PG-13');
-MERGE INTO rating (name) KEY (name) VALUES ('R');
-MERGE INTO rating (name) KEY (name) VALUES ('NC-17');
+INSERT INTO PUBLIC.GENRE (name)
+SELECT t.* FROM (
+                    VALUES
+                        ('Комедия'),
+                        ('Драма'),
+                        ('Мультфильм'),
+                        ('Триллер'),
+                        ('Документальный'),
+                        ('Боевик')
+                ) AS t(gname)
+WHERE NOT EXISTS (SELECT 1 FROM PUBLIC.GENRE WHERE name = t.gname);
+
+INSERT INTO PUBLIC.rating (name)
+SELECT t.* FROM (
+                    VALUES
+                        ('G'),
+                        ('PG'),
+                        ('PG-13'),
+                        ('R'),
+                        ('NC-17')
+                ) AS t(mpaname)
+WHERE NOT EXISTS (SELECT 1 FROM PUBLIC.rating WHERE name = t.mpaname);
