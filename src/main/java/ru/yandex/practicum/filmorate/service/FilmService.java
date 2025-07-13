@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -29,13 +30,15 @@ public class FilmService {
     final UserStorage userStorage;
     final RatingService ratingService;
     final GenreService genreService;
+    final FilmRepository filmRepository;
 
     public FilmService(@Qualifier("dbStorage") FilmStorage filmStorage, @Qualifier("dbStorage") UserStorage userStorage,
-                       RatingService ratingService, GenreService genreService) {
+                       RatingService ratingService, GenreService genreService, FilmRepository filmRepository) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.ratingService = ratingService;
         this.genreService = genreService;
+        this.filmRepository = filmRepository;
     }
 
     public FilmDto createFilm(NewFilmRequest request) {
@@ -124,5 +127,13 @@ public class FilmService {
         userStorage.getUserById(userId);
 
         filmStorage.removeLike(filmId, userId);
+    }
+
+    //Добавил публичный метод
+    public List<FilmDto> getTopPopularFilms(int count, Long genreId, Integer year) {
+        List<Film> films = filmRepository.findPopularFilmsByGenreAndYear(count, genreId, year);
+        return films.stream()
+                .map(FilmMapper::mapToFilmDto)
+                .collect(Collectors.toList());
     }
 }
