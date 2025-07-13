@@ -16,6 +16,7 @@ import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import java.sql.Date;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
@@ -193,5 +194,30 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             case YEAR -> findMany(FIND_BY_DIRECTOR_SORT_YEAR, directorId);
             case LIKES -> findMany(FIND_BY_DIRECTOR_SORT_LIKES, directorId);
         };
+    }
+
+    public List<Long> getLikedFilmsByUser(Long userId) {
+        String sql = "SELECT film_id FROM likes WHERE user_id = ?";
+        return jdbc.queryForList(sql,Long.class, userId);
+    }
+
+    public List<Long> getUsersLikedSameFilms(List<Long> filmIds,Long ownUserId) {
+        if (filmIds.isEmpty()) return List.of();
+
+        String parSql = filmIds.stream()
+                .map(id -> "?")
+                .collect(Collectors.joining(","));
+        String sql = String.format("SELECT DISTINCT user_id FROM likes WHERE film_id IN (%s) AND user_id != ?",parSql);
+
+        List<Object> params =  new ArrayList<>(filmIds);
+        params.add(ownUserId);
+
+        return jdbc.queryForList(sql,Long.class, params.toArray());
+    }
+
+    public List<Long> getRecommendedFilmIds(Long userId, Long similarUserId) {
+        String sql = "SELECT l.film_id FROM likes l WHERE l.user_id = ? AND l.film_id NOT IN (" +
+                "SELECT film_id FROM likes WHERE user_id = ?)";
+        return jdbc.queryForList(sql,Long.class, similarUserId, userId);
     }
 }
