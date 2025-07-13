@@ -96,4 +96,9 @@ public class FilmController {
         }
         return filmService.findFilmsByDirectorId(directorId, sortByEnum);
     }
+
+    @GetMapping("/common")
+    public List<FilmDto> getCommonFilms(@RequestParam Long userId,@RequestParam Long friendId) {
+        return filmService.getCommonFilms(userId,friendId);
+    }
 }

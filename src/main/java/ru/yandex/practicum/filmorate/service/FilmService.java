@@ -5,6 +5,11 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.FilmRepository;
+import ru.yandex.practicum.filmorate.dal.dto.FilmDto;
+import ru.yandex.practicum.filmorate.dal.dto.NewFilmRequest;
+import ru.yandex.practicum.filmorate.dal.dto.RatingDto;
+import ru.yandex.practicum.filmorate.dal.dto.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.controller.SortBy;
 import ru.yandex.practicum.filmorate.dal.FilmRepository;
 import ru.yandex.practicum.filmorate.dal.dto.FilmDto;
@@ -162,6 +167,19 @@ public class FilmService {
                     film.setDirectors(directors);
                     return FilmMapper.mapToFilmDto(film);
                 })
+                .collect(Collectors.toList());
+    }
+
+    public List<FilmDto> getCommonFilms(Long userId, Long friendId) {
+        List<Film> commonFilms = filmStorage.getCommonLikedFilms(userId, friendId);
+
+        for (Film film : commonFilms) {
+            film.setGenres(genreService.getGenresForFilm(film.getId()));
+            film.setDirectors(directorService.getDirectorsByFilmId(film.getId()));
+        }
+
+        return commonFilms.stream()
+                .map(FilmMapper::mapToFilmDto)
                 .collect(Collectors.toList());
     }
 

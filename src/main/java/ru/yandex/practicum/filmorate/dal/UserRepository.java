@@ -78,7 +78,9 @@ public class UserRepository extends BaseRepository<User> implements UserStorage 
         jdbc.update("DELETE FROM friendships WHERE user_id = ? OR friend_id = ?", userId, userId);
         // Удаляем все лайки, поставленные пользователем
         jdbc.update("DELETE FROM likes WHERE user_id = ?", userId);
-        // Удаляем пользователя
+        // Удаляем все отзывы, связанные с пользователем
+        jdbc.update("DELETE FROM review WHERE user_id = ?", userId);
+        // Наконец, удаляем пользователя
         delete("DELETE FROM users WHERE id = ?", userId);
     }
 }
