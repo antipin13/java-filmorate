@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS review (
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (film_id) REFERENCES film(id),
     useful INTEGER DEFAULT 0
-)
+);
 
 CREATE TABLE IF NOT EXISTS public.director (
     director_id INTEGER NOT NULL AUTO_INCREMENT,
