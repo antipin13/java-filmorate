@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.dal.dto.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -72,8 +73,9 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    @ResponseStatus(HttpStatus.OK)
-    public Collection<FilmDto> findCountFilms(@RequestParam(defaultValue = "10") int count) {
-        return filmService.getPopularFilms(count);
+    public List<FilmDto> getPopularFilms(@RequestParam(name = "count", defaultValue = "10") int count,
+                                         @RequestParam(name = "genreId", required = false) Long genreId,
+                                         @RequestParam(name = "year", required = false) Integer year) {
+        return filmService.getTopPopularFilms(count, genreId, year);
     }
 }
