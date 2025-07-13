@@ -173,6 +173,9 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
         //Удаляем связи с режисерами
         String deleteDirectorsSql = "DELETE FROM film_directors WHERE film_id = ?";
         jdbc.update(deleteDirectorsSql, filmId);
+        //Удаляем связи с отзывами
+        String deleteReviewSql = "DELETE FROM review WHERE film_id = ?";
+        jdbc.update(deleteReviewSql, filmId);
         // Удаляем сам фильм
         return delete(DELETE_QUERY, filmId);
     }
