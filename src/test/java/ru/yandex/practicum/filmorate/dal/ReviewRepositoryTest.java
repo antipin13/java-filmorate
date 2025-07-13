@@ -26,7 +26,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Import({ReviewRepository.class, ReviewRowMapper.class, FilmRepository.class, FilmRowMapper.class,
         RatingRepository.class, GenreRepository.class, RatingRowMapper.class, GenreRowMapper.class,
-        UserRepository.class, UserRowMapper.class})
+        UserRepository.class, UserRowMapper.class, DirectorRepository.class, DirectorRowMapper.class})
 @FieldDefaults(level = AccessLevel.PRIVATE)
 class ReviewRepositoryTest {
     final ReviewRepository reviewRepository;
