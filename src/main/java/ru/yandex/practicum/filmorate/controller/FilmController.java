@@ -14,6 +14,7 @@ import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -93,5 +94,10 @@ public class FilmController {
                             Arrays.toString(SortBy.values()).toLowerCase()));
         }
         return filmService.findFilmsByDirectorId(directorId, sortByEnum);
+    }
+
+    @GetMapping("/common")
+    public List<FilmDto> getCommonFilms(@RequestParam Long userId,@RequestParam Long friendId) {
+        return filmService.getCommonFilms(userId,friendId);
     }
 }
