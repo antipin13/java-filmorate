@@ -15,6 +15,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -153,6 +154,19 @@ public class FilmService {
                     film.setDirectors(directors);
                     return FilmMapper.mapToFilmDto(film);
                 })
+                .collect(Collectors.toList());
+    }
+
+    public List<FilmDto> getCommonFilms(Long userId, Long friendId) {
+        List<Film> commonFilms = filmStorage.getCommonLikedFilms(userId, friendId);
+
+        for (Film film : commonFilms) {
+            film.setGenres(genreService.getGenresForFilm(film.getId()));
+            film.setDirectors(directorService.getDirectorsByFilmId(film.getId()));
+        }
+
+        return commonFilms.stream()
+                .map(FilmMapper::mapToFilmDto)
                 .collect(Collectors.toList());
     }
 }
