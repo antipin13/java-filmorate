@@ -155,4 +155,11 @@ public class FilmService {
                 })
                 .collect(Collectors.toList());
     }
+
+    public List<FilmDto> getCommonFilms(Long userId, Long friendId) {
+        List<Film> commonFilms = filmStorage.getCommonLikedFilms(userId,friendId);
+        return commonFilms.stream()
+                .map(FilmMapper::mapToFilmDto)
+                .collect(Collectors.toList());
+    }
 }
