@@ -10,8 +10,9 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dal.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dal.dto.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dal.dto.UpdateFilmRequest;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.service.FilmService;
-
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +23,8 @@ import java.util.Optional;
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class FilmController {
+
+
     final FilmService filmService;
 
     @GetMapping
@@ -77,5 +80,20 @@ public class FilmController {
                                          @RequestParam(name = "genreId", required = false) Long genreId,
                                          @RequestParam(name = "year", required = false) Integer year) {
         return filmService.getTopPopularFilms(count, genreId, year);
+    }
+
+    @GetMapping("/director/{director-id}")
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<FilmDto> findFilmsByDirectorId(@PathVariable("director-id") Long directorId,
+                                                     @RequestParam String sortBy) {
+        SortBy sortByEnum;
+        try {
+            sortByEnum = SortBy.valueOf(sortBy.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new ValidationException(sortBy,
+                    String.format("Передан некорректный параметр сортировки. Допустимые значения:%s",
+                            Arrays.toString(SortBy.values()).toLowerCase()));
+        }
+        return filmService.findFilmsByDirectorId(directorId, sortByEnum);
     }
 }

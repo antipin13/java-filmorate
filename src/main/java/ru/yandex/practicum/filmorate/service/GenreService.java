@@ -9,7 +9,6 @@ import ru.yandex.practicum.filmorate.dal.dto.GenreDto;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.GenreMapper;
 import ru.yandex.practicum.filmorate.model.Genre;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
