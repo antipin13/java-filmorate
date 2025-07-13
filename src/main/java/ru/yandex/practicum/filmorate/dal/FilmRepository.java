@@ -229,15 +229,15 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     @Override
     public List<Film> getCommonLikedFilms(Long userId, Long friendId) {
         String sql = """
-        SELECT f.*, COUNT(l2.user_id) AS like_count
-        FROM film f
-        JOIN likes l1 ON f.id = l1.film_id
-        JOIN likes l2 ON f.id = l2.film_id
-        WHERE l1.user_id = ? 
-          AND f.id IN (SELECT film_id FROM likes WHERE user_id = ?)
-        GROUP BY f.id
-        ORDER BY like_count DESC
-        """;
+                SELECT f.*, COUNT(l2.user_id) AS like_count
+                FROM film f
+                JOIN likes l1 ON f.id = l1.film_id
+                JOIN likes l2 ON f.id = l2.film_id
+                WHERE l1.user_id = ?
+                  AND f.id IN (SELECT film_id FROM likes WHERE user_id = ?)
+                GROUP BY f.id
+                ORDER BY like_count DESC
+                """;
 
         return findMany(sql, userId, friendId);
     }
