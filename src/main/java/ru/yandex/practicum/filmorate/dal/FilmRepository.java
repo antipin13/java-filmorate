@@ -7,12 +7,13 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.controller.SortBy;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-
 import java.sql.Date;
 import java.util.*;
 
@@ -23,6 +24,7 @@ import java.util.*;
 public class FilmRepository extends BaseRepository<Film> implements FilmStorage {
     final RatingRepository ratingRepository;
     final GenreRepository genreRepository;
+    final DirectorRepository directorRepository;
 
     static final String INSERT_QUERY = "INSERT INTO film(name, description, release_date, duration, rating_id)" +
             "VALUES (?, ?, ?, ?, ?)";
@@ -34,12 +36,51 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     static final String FIND_POPULAR_QUERY = "SELECT f.*, COUNT(l.user_id) AS likes_count " +
             "FROM film f LEFT JOIN likes l ON f.id = l.film_id GROUP BY f.id " +
             "ORDER BY likes_count DESC LIMIT ?";
+    static final String INSERT_FILM_GENRE_QUERY = "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)";
+    static final String INSERT_FILM_DIRECTOR_QUERY = "INSERT INTO film_directors (film_id, director_id) VALUES (?, ?)";
+    static final String DELETE_FILM_GENRE_QUERY = "DELETE FROM film_genres WHERE film_id = ?";
+    static final String DELETE_FILM_DIRECTOR_QUERY = "DELETE FROM film_directors WHERE film_id = ?";
+    static final String FIND_BY_DIRECTOR_SORT_YEAR = """
+            SELECT
+            	f.ID,
+            	f.NAME,
+            	f.DESCRIPTION,
+            	f.RELEASE_DATE,
+            	f.DURATION,
+            	f.RATING_ID
+            FROM film f
+            INNER JOIN film_directors fd ON fd.FILM_ID = f.ID
+            WHERE fd.DIRECTOR_ID = ?
+            ORDER BY f.RELEASE_DATE ASC
+            """;
+    static final String FIND_BY_DIRECTOR_SORT_LIKES = """
+            SELECT
+            	f.ID,
+            	f.NAME,
+            	f.DESCRIPTION,
+            	f.RELEASE_DATE,
+            	f.DURATION,
+            	f.RATING_ID,
+            	count(l.*) AS likes
+            FROM film f
+            INNER JOIN film_directors fd ON fd.FILM_ID = f.ID
+            LEFT JOIN likes l ON l.FILM_ID = f.ID
+            WHERE fd.DIRECTOR_ID = ?
+            GROUP BY f.ID,
+            		f.NAME,
+            		f.DESCRIPTION,
+            		f.RELEASE_DATE,
+            		f.DURATION,
+            		f.RATING_ID
+            ORDER BY likes desc
+            """;
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper, RatingRepository ratingRepository,
-                          GenreRepository genreRepository) {
+                          GenreRepository genreRepository, DirectorRepository directorRepository) {
         super(jdbc, mapper, Film.class);
         this.ratingRepository = ratingRepository;
         this.genreRepository = genreRepository;
+        this.directorRepository = directorRepository;
     }
 
     @Override
@@ -51,13 +92,7 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
 
         List<Genre> genres = new ArrayList<>();
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
-            for (Genre genre : film.getGenres()) {
-                Optional<Genre> genreOpt = genreRepository.findById(genre.getId());
-                if (genreOpt.isEmpty()) {
-                    throw new NotFoundException("Жанр не найден с ID: " + genre.getId());
-                }
-                genres.add(genreOpt.get());
-            }
+            genres.addAll(film.getGenres());
         }
         Map<Long, Genre> genreMap = new LinkedHashMap<>();
         for (Genre genre : genres) {
@@ -79,13 +114,15 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
         film.setId(id);
 
         if (film.getGenres() != null) {
-            for (Genre genre : film.getGenres()) {
-                String insertGenreSql = "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)";
-                jdbc.update(insertGenreSql, id, genre.getId());
-            }
+            film.getGenres().forEach(genre -> jdbc.update(INSERT_FILM_GENRE_QUERY, id, genre.getId()));
         }
 
-        return film;
+        if (film.getDirectors() != null) {
+            film.getDirectors().forEach(director ->
+                    jdbc.update(INSERT_FILM_DIRECTOR_QUERY, id, director.getId()));
+        }
+
+        return getFilmById(id).get();
     }
 
     @Override
@@ -99,7 +136,26 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
                 film.getMpa().getId(),
                 film.getId()
         );
-        return film;
+
+        if (film.getGenres() != null) {
+            List<Genre> oldGenres = genreRepository.findGenresByFilmId(film.getId());
+            boolean isNeedToDeleteOldGenres = !oldGenres.isEmpty();
+            if (isNeedToDeleteOldGenres) {
+                delete(DELETE_FILM_GENRE_QUERY, film.getId());
+            }
+            film.getGenres().forEach(genre -> jdbc.update(INSERT_FILM_GENRE_QUERY, film.getId(), genre.getId()));
+        }
+
+        if (film.getDirectors() != null) {
+           List<Director> oldDirectors = directorRepository.findDirectorsByFilmId(film.getId());
+           boolean isNeedToDeleteOldDirectors = !oldDirectors.isEmpty();
+           if (isNeedToDeleteOldDirectors) {
+               delete(DELETE_FILM_DIRECTOR_QUERY, film.getId());
+           }
+           film.getDirectors().forEach(director -> jdbc.update(INSERT_FILM_DIRECTOR_QUERY,
+                   film.getId(), director.getId()));
+        }
+        return getFilmById(film.getId()).get();
     }
 
     @Override
@@ -141,5 +197,13 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     public void removeLike(Long filmId, Long userId) {
         String deleteLikeSql = "DELETE FROM likes WHERE film_id = ? AND user_id = ?";
         jdbc.update(deleteLikeSql, filmId, userId);
+    }
+
+    @Override
+    public List<Film> getFilmsByDirectorId(Long directorId, SortBy sortBy) {
+        return switch (sortBy) {
+            case YEAR -> findMany(FIND_BY_DIRECTOR_SORT_YEAR, directorId);
+            case LIKES -> findMany(FIND_BY_DIRECTOR_SORT_LIKES, directorId);
+        };
     }
 }

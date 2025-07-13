@@ -8,7 +8,6 @@ import ru.yandex.practicum.filmorate.exceptions.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exceptions.InternalServerException;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
-
 import java.sql.SQLException;
 
 @RestControllerAdvice
@@ -16,7 +15,7 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleNotValidParameter(final ValidationException e) {
-        return new ErrorResponse(String.format("Неккоректное значение параметра %s: ", e.getParameter(),
+        return new ErrorResponse(String.format("Некорректное значение параметра %s: %s", e.getParameter(),
                 e.getReason()));
     }
 

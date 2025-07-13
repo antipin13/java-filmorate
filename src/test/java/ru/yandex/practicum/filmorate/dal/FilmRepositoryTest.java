@@ -11,30 +11,31 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import ru.yandex.practicum.filmorate.dal.mappers.FilmRowMapper;
-import ru.yandex.practicum.filmorate.dal.mappers.GenreRowMapper;
-import ru.yandex.practicum.filmorate.dal.mappers.RatingRowMapper;
-import ru.yandex.practicum.filmorate.dal.mappers.UserRowMapper;
+import ru.yandex.practicum.filmorate.controller.SortBy;
+import ru.yandex.practicum.filmorate.dal.mappers.*;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.model.User;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-
+import java.util.Set;
+import org.assertj.core.api.Assertions;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @JdbcTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Import({FilmRepository.class, FilmRowMapper.class, RatingRepository.class, GenreRepository.class,
-        RatingRowMapper.class, GenreRowMapper.class, UserRepository.class, UserRowMapper.class})
+        RatingRowMapper.class, GenreRowMapper.class, UserRepository.class, UserRowMapper.class,
+        DirectorRepository.class, DirectorRowMapper.class})
 @FieldDefaults(level = AccessLevel.PRIVATE)
 class FilmRepositoryTest {
     final JdbcTemplate jdbc;
     final FilmRepository filmRepository;
     final UserRepository userRepository;
+    final DirectorRepository directorRepository;
     Film film;
     Rating mpa = new Rating();
 
@@ -200,5 +201,126 @@ class FilmRepositoryTest {
         List<Film> popularFilms = filmRepository.getPopularFilms(1);
 
         assertThat(popularFilms.size()).isEqualTo(1);
+    }
+
+    @Test
+    void getFilmsByDirectorId_SortedByYear() {
+        Director director = new Director();
+        director.setFirstName("Director Name");
+        director = directorRepository.create(director);
+
+        Film film1 = Film.builder()
+                .name("Film 1")
+                .description("Description 1")
+                .releaseDate(LocalDate.of(2000, 1, 1))
+                .duration(120)
+                .mpa(mpa)
+                .directors(Set.of(director))
+                .build();
+
+        Film film2 = Film.builder()
+                .name("Film 2")
+                .description("Description 2")
+                .releaseDate(LocalDate.of(1990, 1, 1))
+                .duration(130)
+                .mpa(mpa)
+                .directors(Set.of(director))
+                .build();
+
+        Film film3 = Film.builder()
+                .name("Film 3")
+                .description("Description 3")
+                .releaseDate(LocalDate.of(2010, 1, 1))
+                .duration(140)
+                .mpa(mpa)
+                .directors(Set.of(director))
+                .build();
+
+        filmRepository.create(film1);
+        filmRepository.create(film2);
+        filmRepository.create(film3);
+
+        List<Film> films = filmRepository.getFilmsByDirectorId(director.getId(), SortBy.YEAR);
+
+        Assertions.assertThat(films).hasSize(3);
+        Assertions.assertThat(films.get(0).getName()).isEqualTo("Film 2");
+        Assertions.assertThat(films.get(1).getName()).isEqualTo("Film 1");
+        Assertions.assertThat(films.get(2).getName()).isEqualTo("Film 3");
+    }
+
+    @Test
+    void getFilmsByDirectorId_SortedByLikes() {
+        Director director = new Director();
+        director.setFirstName("Director Name");
+        director = directorRepository.create(director);
+
+        User user1 = User.builder()
+                .email("user1@mail.ru")
+                .login("login1")
+                .name("name1")
+                .birthday(LocalDate.of(1990, 1, 1))
+                .build();
+        user1 = userRepository.create(user1);
+
+        User user2 = User.builder()
+                .email("user2@mail.ru")
+                .login("login2")
+                .name("name2")
+                .birthday(LocalDate.of(1990, 1, 1))
+                .build();
+        user2 = userRepository.create(user2);
+
+        Film film1 = Film.builder()
+                .name("Film 1")
+                .description("Description 1")
+                .releaseDate(LocalDate.of(2000, 1, 1))
+                .duration(120)
+                .mpa(mpa)
+                .directors(Set.of(director))
+                .build();
+
+        Film film2 = Film.builder()
+                .name("Film 2")
+                .description("Description 2")
+                .releaseDate(LocalDate.of(2000, 1, 1))
+                .duration(130)
+                .mpa(mpa)
+                .directors(Set.of(director))
+                .build();
+
+        Film film3 = Film.builder()
+                .name("Film 3")
+                .description("Description 3")
+                .releaseDate(LocalDate.of(2000, 1, 1))
+                .duration(140)
+                .mpa(mpa)
+                .directors(Set.of(director))
+                .build();
+
+        film1 = filmRepository.create(film1);
+        film2 = filmRepository.create(film2);
+        film3 = filmRepository.create(film3);
+
+        filmRepository.addLike(film1.getId(), user1.getId());
+        filmRepository.addLike(film1.getId(), user2.getId());
+        filmRepository.addLike(film2.getId(), user1.getId());
+
+        List<Film> films = filmRepository.getFilmsByDirectorId(director.getId(), SortBy.LIKES);
+
+        Assertions.assertThat(films).hasSize(3);
+        Assertions.assertThat(films.get(0).getName()).isEqualTo("Film 1");
+        Assertions.assertThat(films.get(1).getName()).isEqualTo("Film 2");
+        Assertions.assertThat(films.get(2).getName()).isEqualTo("Film 3");
+    }
+
+    @Test
+    void getFilmsByDirectorId_NoFilms_ReturnsEmptyList() {
+        Director director = new Director();
+        director.setFirstName("Director Name");
+        director = directorRepository.create(director);
+
+        List<Film> films = filmRepository.getFilmsByDirectorId(director.getId(), SortBy.YEAR);
+
+        Assertions.assertThat(films).isEmpty();
     }
 }
