@@ -80,11 +80,9 @@ public class UserService {
     }
 
     public void deleteUser(Long userId) {
-        // Проверка существования пользователя
         if (userStorage.getUserById(userId).isEmpty()) {
             throw new NotFoundException("Пользователь не найден");
         }
-        // Удаление пользователя и связанных данных
         ((UserRepository) userStorage).deleteUserById(userId);
     }
 

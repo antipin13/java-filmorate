@@ -5,6 +5,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.controller.SearchBy;
 import ru.yandex.practicum.filmorate.dal.EventRepository;
 import ru.yandex.practicum.filmorate.dal.FilmRepository;
 import ru.yandex.practicum.filmorate.dal.dto.FilmDto;
@@ -12,13 +13,13 @@ import ru.yandex.practicum.filmorate.dal.dto.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dal.dto.RatingDto;
 import ru.yandex.practicum.filmorate.dal.dto.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.controller.SortBy;
-
+import ru.yandex.practicum.filmorate.dal.FilmRepository;
+import ru.yandex.practicum.filmorate.dal.dto.*;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
-
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -131,15 +132,12 @@ public class FilmService {
     }
 
     public boolean deleteFilmAndRelations(Long id) {
-        // Проверка существования фильма
         Optional<Film> filmOpt = filmStorage.getFilmById(id);
         if (filmOpt.isEmpty()) {
             throw new NotFoundException("Фильм не найден с ID: " + id);
         }
-        // Вызов метода репозитория для удаления связанной информации и фильма
         return ((FilmRepository) filmStorage).deleteFilmWithRelations(id);
     }
-
 
     public void addLike(Long filmId, Long userId) {
         filmStorage.getFilmById(filmId);
@@ -164,6 +162,18 @@ public class FilmService {
     public List<FilmDto> findFilmsByDirectorId(Long directorId, SortBy sortBy) {
         directorService.getDirectorById(directorId);
         return filmStorage.getFilmsByDirectorId(directorId, sortBy).stream()
+                .map(film -> {
+                    List<Genre> genres = genreService.getGenresForFilm(film.getId());
+                    Set<Director> directors = directorService.getDirectorsByFilmId(film.getId());
+                    film.setGenres(genres);
+                    film.setDirectors(directors);
+                    return FilmMapper.mapToFilmDto(film);
+                })
+                .collect(Collectors.toList());
+    }
+
+    public List<FilmDto> getFilmsByQuery(String query, List<SearchBy> searchBys) {
+        return ((FilmRepository) filmStorage).getFilmsByQuery(query, searchBys).stream()
                 .map(film -> {
                     List<Genre> genres = genreService.getGenresForFilm(film.getId());
                     Set<Director> directors = directorService.getDirectorsByFilmId(film.getId());
