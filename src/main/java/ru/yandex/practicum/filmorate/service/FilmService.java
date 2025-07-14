@@ -13,13 +13,6 @@ import ru.yandex.practicum.filmorate.dal.dto.RatingDto;
 import ru.yandex.practicum.filmorate.dal.dto.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.controller.SortBy;
 
-
-import ru.yandex.practicum.filmorate.dal.FilmRepository;
-import ru.yandex.practicum.filmorate.dal.dto.FilmDto;
-import ru.yandex.practicum.filmorate.dal.dto.NewFilmRequest;
-import ru.yandex.practicum.filmorate.dal.dto.RatingDto;
-import ru.yandex.practicum.filmorate.dal.dto.UpdateFilmRequest;
-
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.*;
@@ -38,23 +31,20 @@ public class FilmService {
     final UserStorage userStorage;
     final RatingService ratingService;
     final GenreService genreService;
-    final FilmRepository filmRepository;
     final DirectorService directorService;
     final EventRepository eventRepository;
+    final FilmRepository filmRepository;
 
     public FilmService(@Qualifier("dbStorage") FilmStorage filmStorage, @Qualifier("dbStorage") UserStorage userStorage,
-
-                       RatingService ratingService, GenreService genreService, DirectorService directorService, EventRepository eventRepository) {
-
-                       RatingService ratingService, GenreService genreService, FilmRepository filmRepository, DirectorService directorService) {
-
+                       RatingService ratingService, GenreService genreService, DirectorService directorService,
+                       EventRepository eventRepository, FilmRepository filmRepository) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.ratingService = ratingService;
         this.genreService = genreService;
-        this.filmRepository = filmRepository;
         this.directorService = directorService;
         this.eventRepository = eventRepository;
+        this.filmRepository = filmRepository;
     }
 
     public FilmDto createFilm(NewFilmRequest request) {
