@@ -20,8 +20,8 @@ public class EventRepository extends BaseRepository<Event> {
         super(jdbc, mapper, Event.class);
     }
 
-    public void addEvent(Long timestamp, Long userId, String eventType, String operation, Long entity_id) {
-        jdbc.update(INSERT_QUERY, timestamp, userId, eventType, operation, entity_id);
+    public void addEvent(Long timestamp, Long userId, String eventType, String operation, Long entityId) {
+        jdbc.update(INSERT_QUERY, timestamp, userId, eventType, operation, entityId);
     }
 
     public List<Event> findEventsByUser(Long userId) {
