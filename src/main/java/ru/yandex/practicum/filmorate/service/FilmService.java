@@ -5,26 +5,21 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.EventRepository;
 import ru.yandex.practicum.filmorate.dal.FilmRepository;
 import ru.yandex.practicum.filmorate.dal.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dal.dto.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dal.dto.RatingDto;
 import ru.yandex.practicum.filmorate.dal.dto.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.controller.SortBy;
-import ru.yandex.practicum.filmorate.dal.FilmRepository;
-import ru.yandex.practicum.filmorate.dal.dto.FilmDto;
-import ru.yandex.practicum.filmorate.dal.dto.NewFilmRequest;
-import ru.yandex.practicum.filmorate.dal.dto.RatingDto;
-import ru.yandex.practicum.filmorate.dal.dto.UpdateFilmRequest;
+
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Rating;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -36,17 +31,20 @@ public class FilmService {
     final UserStorage userStorage;
     final RatingService ratingService;
     final GenreService genreService;
-    final FilmRepository filmRepository;
     final DirectorService directorService;
+    final EventRepository eventRepository;
+    final FilmRepository filmRepository;
 
     public FilmService(@Qualifier("dbStorage") FilmStorage filmStorage, @Qualifier("dbStorage") UserStorage userStorage,
-                       RatingService ratingService, GenreService genreService, FilmRepository filmRepository, DirectorService directorService) {
+                       RatingService ratingService, GenreService genreService, DirectorService directorService,
+                       EventRepository eventRepository, FilmRepository filmRepository) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.ratingService = ratingService;
         this.genreService = genreService;
-        this.filmRepository = filmRepository;
         this.directorService = directorService;
+        this.eventRepository = eventRepository;
+        this.filmRepository = filmRepository;
     }
 
     public FilmDto createFilm(NewFilmRequest request) {
@@ -148,6 +146,9 @@ public class FilmService {
         userStorage.getUserById(userId);
 
         filmStorage.addLike(filmId, userId);
+
+        eventRepository.addEvent(Instant.now().toEpochMilli(), userId, EventType.LIKE.toString(),
+                Operation.ADD.toString(), filmId);
     }
 
     public void removeLike(Long filmId, Long userId) {
@@ -155,6 +156,9 @@ public class FilmService {
         userStorage.getUserById(userId);
 
         filmStorage.removeLike(filmId, userId);
+
+        eventRepository.addEvent(Instant.now().toEpochMilli(), userId, EventType.LIKE.toString(),
+                Operation.REMOVE.toString(), filmId);
     }
 
     public List<FilmDto> findFilmsByDirectorId(Long directorId, SortBy sortBy) {

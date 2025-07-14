@@ -5,6 +5,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.EventRepository;
 import ru.yandex.practicum.filmorate.dal.FriendshipRepository;
 import ru.yandex.practicum.filmorate.dal.UserRepository;
 import ru.yandex.practicum.filmorate.dal.dto.*;
@@ -12,9 +13,13 @@ import ru.yandex.practicum.filmorate.exceptions.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.*;
@@ -28,12 +33,14 @@ public class UserService {
     final UserStorage userStorage;
     final FriendshipRepository friendshipRepository;
     final FilmStorage filmStorage;
+    final EventRepository eventRepository;
 
     public UserService(@Qualifier("dbStorage") UserStorage userStorage, FriendshipRepository friendshipRepository,
-                       @Qualifier("dbStorage") FilmStorage filmStorage) {
+                       @Qualifier("dbStorage") FilmStorage filmStorage, EventRepository eventRepository) {
         this.userStorage = userStorage;
         this.friendshipRepository = friendshipRepository;
         this.filmStorage = filmStorage;
+        this.eventRepository = eventRepository;
     }
 
     public UserDto createUser(NewUserRequest request) {
@@ -103,6 +110,9 @@ public class UserService {
         }
         user.getFriends().add(friend);
 
+        eventRepository.addEvent(Instant.now().toEpochMilli(), userId, EventType.FRIEND.toString(),
+                Operation.ADD.toString(), friendId);
+
         return UserMapper.mapToUserDto(user);
     }
 
@@ -131,6 +141,9 @@ public class UserService {
         }
 
         friendshipRepository.removeFriendship(userId, friendId);
+
+        eventRepository.addEvent(Instant.now().toEpochMilli(), userId, EventType.FRIEND.toString(),
+                Operation.REMOVE.toString(), friendId);
     }
 
     public List<UserDto> getCommonFriend(Long userId, Long friendId) {
