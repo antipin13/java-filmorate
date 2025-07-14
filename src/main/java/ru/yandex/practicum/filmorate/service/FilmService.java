@@ -5,7 +5,9 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.controller.SearchBy;
 import ru.yandex.practicum.filmorate.controller.SortBy;
+import ru.yandex.practicum.filmorate.dal.FilmRepository;
 import ru.yandex.practicum.filmorate.dal.dto.*;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
@@ -146,6 +148,18 @@ public class FilmService {
     public List<FilmDto> findFilmsByDirectorId(Long directorId, SortBy sortBy) {
         directorService.getDirectorById(directorId);
         return filmStorage.getFilmsByDirectorId(directorId, sortBy).stream()
+                .map(film -> {
+                    List<Genre> genres = genreService.getGenresForFilm(film.getId());
+                    Set<Director> directors = directorService.getDirectorsByFilmId(film.getId());
+                    film.setGenres(genres);
+                    film.setDirectors(directors);
+                    return FilmMapper.mapToFilmDto(film);
+                })
+                .collect(Collectors.toList());
+    }
+
+    public List<FilmDto> getFilmsByQuery(String query, List<SearchBy> searchBys) {
+        return ((FilmRepository) filmStorage).getFilmsByQuery(query, searchBys).stream()
                 .map(film -> {
                     List<Genre> genres = genreService.getGenresForFilm(film.getId());
                     Set<Director> directors = directorService.getDirectorsByFilmId(film.getId());

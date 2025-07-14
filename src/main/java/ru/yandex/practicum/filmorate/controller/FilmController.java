@@ -11,9 +11,7 @@ import ru.yandex.practicum.filmorate.dal.dto.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dal.dto.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/films")
@@ -91,5 +89,39 @@ public class FilmController {
                             Arrays.toString(SortBy.values()).toLowerCase()));
         }
         return filmService.findFilmsByDirectorId(directorId, sortByEnum);
+    }
+
+//    @GetMapping("/search")
+//    @ResponseStatus(HttpStatus.OK)
+//    public Collection<FilmDto> getPopularFilms() {
+//        return filmService.getPopularFilms(Integer.MAX_VALUE);
+//    }
+
+    @GetMapping("/search")
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<FilmDto> getFilmsByQuery(@RequestParam("query") String query,
+                                               @RequestParam(name = "by") Set<String> searchBy) {
+        if (query == null || query.isBlank()) {
+            return filmService.getPopularFilms(Integer.MAX_VALUE);
+        }
+
+        if (searchBy == null || searchBy.isEmpty()) {
+            throw new ValidationException("Параметр by не указан",
+                    String.format("Не передан параметр фильтрации. Допустимые значения:%s",
+                            Arrays.toString(SearchBy.values()).toLowerCase()));
+        }
+
+        List<SearchBy> bys = new ArrayList<>();
+        searchBy.forEach(param -> {
+            try {
+                SearchBy by = SearchBy.valueOf(param.toUpperCase());
+                bys.add(by);
+            } catch (IllegalArgumentException e) {
+                throw new ValidationException(param,
+                        String.format("Передан некорректный параметр фильтрации. Допустимые значения:%s",
+                                Arrays.toString(SearchBy.values()).toLowerCase()));
+            }
+        });
+        return filmService.getFilmsByQuery(query, bys);
     }
 }

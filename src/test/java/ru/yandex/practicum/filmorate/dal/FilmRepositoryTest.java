@@ -11,6 +11,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
+import ru.yandex.practicum.filmorate.controller.SearchBy;
 import ru.yandex.practicum.filmorate.controller.SortBy;
 import ru.yandex.practicum.filmorate.dal.mappers.*;
 import ru.yandex.practicum.filmorate.model.Director;
@@ -322,5 +323,87 @@ class FilmRepositoryTest {
         List<Film> films = filmRepository.getFilmsByDirectorId(director.getId(), SortBy.YEAR);
 
         Assertions.assertThat(films).isEmpty();
+    }
+
+    @Test
+    void getFilmsByQuery_shouldFindByTitleAndDirector() {
+        Director director1 = new Director();
+        director1.setFirstName("Квентин");
+        director1.setLastName("Тарантино");
+        director1 = directorRepository.create(director1);
+
+        Director director2 = new Director();
+        director2.setFirstName("Кристофер");
+        director2.setLastName("Нолан");
+        director2 = directorRepository.create(director2);
+
+        Film film1 = Film.builder()
+                .name("Криминальное чтиво")
+                .description("Фильм про гангстеров")
+                .releaseDate(LocalDate.of(1994, 10, 14))
+                .duration(154)
+                .mpa(mpa)
+                .directors(Set.of(director1))
+                .build();
+
+        Film film2 = Film.builder()
+                .name("Начало")
+                .description("Фильм про сны")
+                .releaseDate(LocalDate.of(2010, 7, 16))
+                .duration(148)
+                .mpa(mpa)
+                .directors(Set.of(director2))
+                .build();
+
+        filmRepository.create(film1);
+        filmRepository.create(film2);
+
+        List<Film> result = filmRepository.getFilmsByQuery("кри", List.of(SearchBy.TITLE, SearchBy.DIRECTOR));
+
+        Assertions.assertThat(result).hasSize(2)
+                .extracting(Film::getName)
+                .containsExactlyInAnyOrder("Криминальное чтиво", "Начало");
+    }
+
+    @Test
+    void getFilmsByQuery_shouldFindByTitleOnly() {
+        Film film = Film.builder()
+                .name("Побег из Шоушенка")
+                .description("Драма про заключенного")
+                .releaseDate(LocalDate.of(1994, 9, 23))
+                .duration(142)
+                .mpa(mpa)
+                .build();
+        filmRepository.create(film);
+
+        List<Film> result = filmRepository.getFilmsByQuery("шоушенк", List.of(SearchBy.TITLE));
+
+        Assertions.assertThat(result).hasSize(1)
+                .extracting(Film::getName)
+                .containsExactly("Побег из Шоушенка");
+    }
+
+    @Test
+    void getFilmsByQuery_shouldFindByDirectorOnly() {
+        Director director = new Director();
+        director.setFirstName("Стивен");
+        director.setLastName("Спилберг");
+        director = directorRepository.create(director);
+
+        Film film = Film.builder()
+                .name("Парк Юрского периода")
+                .description("Про динозавров")
+                .releaseDate(LocalDate.of(1993, 6, 11))
+                .duration(127)
+                .mpa(mpa)
+                .directors(Set.of(director))
+                .build();
+        filmRepository.create(film);
+
+        List<Film> result = filmRepository.getFilmsByQuery("Стивен", List.of(SearchBy.DIRECTOR));
+
+        Assertions.assertThat(result).hasSize(1)
+                .extracting(Film::getName)
+                .containsExactly("Парк Юрского периода");
     }
 }
