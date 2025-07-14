@@ -13,6 +13,8 @@ import ru.yandex.practicum.filmorate.exceptions.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -108,7 +110,8 @@ public class UserService {
         }
         user.getFriends().add(friend);
 
-        eventRepository.addEvent(Instant.now().toEpochMilli(), userId, "FRIEND", "ADD", friendId);
+        eventRepository.addEvent(Instant.now().toEpochMilli(), userId, EventType.FRIEND.toString(),
+                Operation.ADD.toString(), friendId);
 
         return UserMapper.mapToUserDto(user);
     }
@@ -139,7 +142,8 @@ public class UserService {
 
         friendshipRepository.removeFriendship(userId, friendId);
 
-        eventRepository.addEvent(Instant.now().toEpochMilli(), userId, "FRIEND", "REMOVE", friendId);
+        eventRepository.addEvent(Instant.now().toEpochMilli(), userId, EventType.FRIEND.toString(),
+                Operation.REMOVE.toString(), friendId);
     }
 
     public List<UserDto> getCommonFriend(Long userId, Long friendId) {
