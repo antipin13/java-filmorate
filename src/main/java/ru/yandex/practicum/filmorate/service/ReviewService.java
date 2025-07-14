@@ -5,6 +5,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.EventRepository;
 import ru.yandex.practicum.filmorate.dal.ReviewRepository;
 import ru.yandex.practicum.filmorate.dal.dto.*;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
@@ -13,6 +14,7 @@ import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -24,12 +26,14 @@ public class ReviewService {
     final ReviewRepository reviewRepository;
     final FilmStorage filmStorage;
     final UserStorage userStorage;
+    final EventRepository eventRepository;
 
     public ReviewService(ReviewRepository reviewRepository, @Qualifier("dbStorage") FilmStorage filmStorage,
-                         @Qualifier("dbStorage") UserStorage userStorage) {
+                         @Qualifier("dbStorage") UserStorage userStorage, EventRepository eventRepository) {
         this.reviewRepository = reviewRepository;
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
+        this.eventRepository = eventRepository;
     }
 
     public ReviewDto createReview(NewReviewRequest request) {
@@ -49,6 +53,9 @@ public class ReviewService {
 
         review = reviewRepository.create(review);
         log.info("Добавлен отзыв в БД {}", review);
+
+        eventRepository.addEvent(Instant.now().toEpochMilli(), userId, "REVIEW", "ADD",
+                review.getReviewId());
 
         return ReviewMapper.mapToReviewDto(review);
     }
@@ -83,12 +90,18 @@ public class ReviewService {
 
         existingReview = reviewRepository.update(existingReview);
 
+        eventRepository.addEvent(Instant.now().toEpochMilli(), existingReview.getUserId(), "REVIEW",
+                "UPDATE", existingReview.getReviewId());
+
         return ReviewMapper.mapToReviewDto(existingReview);
     }
 
     public boolean deleteReview(Long id) {
         Optional<Review> reviewOpt = reviewRepository.getReviewById(id);
         if (reviewOpt.isPresent()) {
+            eventRepository.addEvent(Instant.now().toEpochMilli(), reviewOpt.get().getUserId(), "REVIEW",
+                    "REMOVE", reviewOpt.get().getReviewId());
+
             return reviewRepository.delete(reviewOpt.get());
         } else {
             throw new NotFoundException(String.format("Отзыв с ID - %d не найден", id));
@@ -103,6 +116,9 @@ public class ReviewService {
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден с ID: " + userId));
 
         reviewRepository.addLike(reviewId);
+
+        eventRepository.addEvent(Instant.now().toEpochMilli(), userId, "LIKE",
+                "ADD", reviewId);
     }
 
     public void addDislike(Long reviewId, Long userId) {
@@ -124,6 +140,9 @@ public class ReviewService {
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден с ID: " + userId));
 
         reviewRepository.removeLike(reviewId);
+
+        eventRepository.addEvent(Instant.now().toEpochMilli(), userId, "LIKE",
+                "REMOVE", reviewId);
     }
 
     public void removeDislike(Long reviewId, Long userId) {

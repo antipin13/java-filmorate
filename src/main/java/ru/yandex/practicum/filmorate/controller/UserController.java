@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dal.dto.*;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
@@ -22,6 +23,7 @@ import java.util.Optional;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserController {
     final UserService userService;
+    final EventService eventService;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
@@ -89,5 +91,11 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public List<FilmDto> getRecommendations(@PathVariable Long id) {
         return userService.getRecommendations(id);
+    }
+
+    @GetMapping("/{id}/feed")
+    @ResponseStatus(HttpStatus.OK)
+    public List<EventDto> getFeeds(@PathVariable Long id) {
+        return eventService.getEventsByUserId(id);
     }
 }
