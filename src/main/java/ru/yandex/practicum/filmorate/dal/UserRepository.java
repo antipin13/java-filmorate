@@ -72,4 +72,11 @@ public class UserRepository extends BaseRepository<User> implements UserStorage 
     public List<User> getUsers() {
         return findMany(FIND_ALL_QUERY);
     }
+
+    public void deleteUserById(Long userId) {
+        jdbc.update("DELETE FROM friendships WHERE user_id = ? OR friend_id = ?", userId, userId);
+        jdbc.update("DELETE FROM likes WHERE user_id = ?", userId);
+        jdbc.update("DELETE FROM review WHERE user_id = ?", userId);
+        delete("DELETE FROM users WHERE id = ?", userId);
+    }
 }

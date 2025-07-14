@@ -6,6 +6,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.controller.SearchBy;
+import ru.yandex.practicum.filmorate.dal.FilmRepository;
+import ru.yandex.practicum.filmorate.dal.dto.FilmDto;
+import ru.yandex.practicum.filmorate.dal.dto.NewFilmRequest;
+import ru.yandex.practicum.filmorate.dal.dto.RatingDto;
+import ru.yandex.practicum.filmorate.dal.dto.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.controller.SortBy;
 import ru.yandex.practicum.filmorate.dal.FilmRepository;
 import ru.yandex.practicum.filmorate.dal.dto.*;
@@ -122,13 +127,12 @@ public class FilmService {
                 .collect(Collectors.toList());
     }
 
-    public boolean deleteFilm(Long id) {
+    public boolean deleteFilmAndRelations(Long id) {
         Optional<Film> filmOpt = filmStorage.getFilmById(id);
-        if (filmOpt.isPresent()) {
-            return filmStorage.delete(filmOpt.get());
-        } else {
-            throw new NotFoundException(String.format("Фильм с ID - %d не найден", id));
+        if (filmOpt.isEmpty()) {
+            throw new NotFoundException("Фильм не найден с ID: " + id);
         }
+        return ((FilmRepository) filmStorage).deleteFilmWithRelations(id);
     }
 
     public void addLike(Long filmId, Long userId) {
@@ -167,6 +171,19 @@ public class FilmService {
                     film.setDirectors(directors);
                     return FilmMapper.mapToFilmDto(film);
                 })
+                .collect(Collectors.toList());
+    }
+
+    public List<FilmDto> getCommonFilms(Long userId, Long friendId) {
+        List<Film> commonFilms = filmStorage.getCommonLikedFilms(userId, friendId);
+
+        for (Film film : commonFilms) {
+            film.setGenres(genreService.getGenresForFilm(film.getId()));
+            film.setDirectors(directorService.getDirectorsByFilmId(film.getId()));
+        }
+
+        return commonFilms.stream()
+                .map(FilmMapper::mapToFilmDto)
                 .collect(Collectors.toList());
     }
 }

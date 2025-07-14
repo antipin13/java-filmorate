@@ -18,6 +18,7 @@ import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import java.sql.Date;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
@@ -173,13 +174,13 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
         }
 
         if (film.getDirectors() != null) {
-           List<Director> oldDirectors = directorRepository.findDirectorsByFilmId(film.getId());
-           boolean isNeedToDeleteOldDirectors = !oldDirectors.isEmpty();
-           if (isNeedToDeleteOldDirectors) {
-               delete(DELETE_FILM_DIRECTOR_QUERY, film.getId());
-           }
-           film.getDirectors().forEach(director -> jdbc.update(INSERT_FILM_DIRECTOR_QUERY,
-                   film.getId(), director.getId()));
+            List<Director> oldDirectors = directorRepository.findDirectorsByFilmId(film.getId());
+            boolean isNeedToDeleteOldDirectors = !oldDirectors.isEmpty();
+            if (isNeedToDeleteOldDirectors) {
+                delete(DELETE_FILM_DIRECTOR_QUERY, film.getId());
+            }
+            film.getDirectors().forEach(director -> jdbc.update(INSERT_FILM_DIRECTOR_QUERY,
+                    film.getId(), director.getId()));
         }
         return getFilmById(film.getId()).get();
     }
@@ -188,6 +189,19 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     public boolean delete(Film film) {
         return delete(DELETE_QUERY, film.getId());
     }
+
+    public boolean deleteFilmWithRelations(Long filmId) {
+        String deleteLikesSql = "DELETE FROM likes WHERE film_id = ?";
+        jdbc.update(deleteLikesSql, filmId);
+        String deleteGenresSql = "DELETE FROM film_genres WHERE film_id = ?";
+        jdbc.update(deleteGenresSql, filmId);
+        String deleteDirectorsSql = "DELETE FROM film_directors WHERE film_id = ?";
+        jdbc.update(deleteDirectorsSql, filmId);
+        String deleteReviewSql = "DELETE FROM review WHERE film_id = ?";
+        jdbc.update(deleteReviewSql, filmId);
+        return delete(DELETE_QUERY, filmId);
+    }
+
 
     @Override
     public Optional<Film> getFilmById(Long filmId) {
@@ -204,8 +218,12 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     }
 
     public void addLike(Long filmId, Long userId) {
-        String insertLikeSql = "INSERT INTO likes (film_id, user_id) VALUES (?, ?)";
-        jdbc.update(insertLikeSql, filmId, userId);
+        String checkSql = "SELECT COUNT(*) FROM likes WHERE film_id = ? AND user_id = ?";
+        Integer count = jdbc.queryForObject(checkSql, Integer.class, filmId, userId);
+        if (count == 0) {
+            String insertSql = "INSERT INTO likes (film_id, user_id) VALUES (?, ?)";
+            jdbc.update(insertSql, filmId, userId);
+        }
     }
 
     public void removeLike(Long filmId, Long userId) {
@@ -222,8 +240,6 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     }
 
     public List<Film> getFilmsByQuery(String text, List<SearchBy> filters) {
-        StringBuilder sql = new StringBuilder(FIND_FILMS_BY_QUERY);
-
         if (filters.containsAll(List.of(SearchBy.TITLE, SearchBy.DIRECTOR))) {
             StringBuilder fltrs = new StringBuilder("AND (f.NAME ILIKE '%").append(text).append("%' ")
                     .append("OR d.DIRECTOR_FIRSTNAME ILIKE '%").append(text).append("%')");
@@ -246,5 +262,46 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             String q = String.format(FIND_FILMS_BY_QUERY, fltr);
             return findMany(q);
         }
+    }
+
+    public List<Long> getLikedFilmsByUser(Long userId) {
+        String sql = "SELECT film_id FROM likes WHERE user_id = ?";
+        return jdbc.queryForList(sql, Long.class, userId);
+    }
+
+    public List<Long> getUsersLikedSameFilms(List<Long> filmIds, Long ownUserId) {
+        if (filmIds.isEmpty()) return List.of();
+
+        String parSql = filmIds.stream()
+                .map(id -> "?")
+                .collect(Collectors.joining(","));
+        String sql = String.format("SELECT DISTINCT user_id FROM likes WHERE film_id IN (%s) AND user_id != ?", parSql);
+
+        List<Object> params = new ArrayList<>(filmIds);
+        params.add(ownUserId);
+
+        return jdbc.queryForList(sql, Long.class, params.toArray());
+    }
+
+    public List<Long> getRecommendedFilmIds(Long userId, Long similarUserId) {
+        String sql = "SELECT l.film_id FROM likes l WHERE l.user_id = ? AND l.film_id NOT IN (" +
+                "SELECT film_id FROM likes WHERE user_id = ?)";
+        return jdbc.queryForList(sql, Long.class, similarUserId, userId);
+    }
+
+    @Override
+    public List<Film> getCommonLikedFilms(Long userId, Long friendId) {
+        String sql = """
+                SELECT f.*, COUNT(l2.user_id) AS like_count
+                FROM film f
+                JOIN likes l1 ON f.id = l1.film_id
+                JOIN likes l2 ON f.id = l2.film_id
+                WHERE l1.user_id = ?
+                  AND f.id IN (SELECT film_id FROM likes WHERE user_id = ?)
+                GROUP BY f.id
+                ORDER BY like_count DESC
+                """;
+
+        return findMany(sql, userId, friendId);
     }
 }
