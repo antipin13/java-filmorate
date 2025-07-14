@@ -11,7 +11,11 @@ import ru.yandex.practicum.filmorate.dal.dto.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dal.dto.RatingDto;
 import ru.yandex.practicum.filmorate.dal.dto.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.controller.SortBy;
-import ru.yandex.practicum.filmorate.dal.dto.*;
+import ru.yandex.practicum.filmorate.dal.FilmRepository;
+import ru.yandex.practicum.filmorate.dal.dto.FilmDto;
+import ru.yandex.practicum.filmorate.dal.dto.NewFilmRequest;
+import ru.yandex.practicum.filmorate.dal.dto.RatingDto;
+import ru.yandex.practicum.filmorate.dal.dto.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Director;
@@ -32,14 +36,16 @@ public class FilmService {
     final UserStorage userStorage;
     final RatingService ratingService;
     final GenreService genreService;
+    final FilmRepository filmRepository;
     final DirectorService directorService;
 
     public FilmService(@Qualifier("dbStorage") FilmStorage filmStorage, @Qualifier("dbStorage") UserStorage userStorage,
-                       RatingService ratingService, GenreService genreService, DirectorService directorService) {
+                       RatingService ratingService, GenreService genreService, FilmRepository filmRepository, DirectorService directorService) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.ratingService = ratingService;
         this.genreService = genreService;
+        this.filmRepository = filmRepository;
         this.directorService = directorService;
     }
 
@@ -173,6 +179,14 @@ public class FilmService {
         }
 
         return commonFilms.stream()
+                .map(FilmMapper::mapToFilmDto)
+                .collect(Collectors.toList());
+    }
+
+    //Добавил публичный метод
+    public List<FilmDto> getTopPopularFilms(int count, Long genreId, Integer year) {
+        List<Film> films = filmRepository.findPopularFilmsByGenreAndYear(count, genreId, year);
+        return films.stream()
                 .map(FilmMapper::mapToFilmDto)
                 .collect(Collectors.toList());
     }
