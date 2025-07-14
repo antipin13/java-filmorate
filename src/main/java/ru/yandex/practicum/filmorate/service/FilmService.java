@@ -13,8 +13,6 @@ import ru.yandex.practicum.filmorate.dal.dto.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dal.dto.RatingDto;
 import ru.yandex.practicum.filmorate.dal.dto.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.controller.SortBy;
-import ru.yandex.practicum.filmorate.dal.FilmRepository;
-import ru.yandex.practicum.filmorate.dal.dto.*;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.*;
@@ -86,6 +84,11 @@ public class FilmService {
         return filmStorage.getFilms()
                 .stream()
                 .map(film -> {
+                    RatingDto mpaDto = ratingService.getRatingById(film.getMpa().getId());
+                    Rating mpa = new Rating();
+                    mpa.setId(mpaDto.getId());
+                    mpa.setName(mpaDto.getName());
+                    film.setMpa(mpa);
                     List<Genre> genres = genreService.getGenresForFilm(film.getId());
                     Set<Director> directors = directorService.getDirectorsByFilmId(film.getId());
                     film.setGenres(genres);
@@ -127,7 +130,18 @@ public class FilmService {
     public List<FilmDto> getPopularFilms(Integer count) {
         return filmStorage.getPopularFilms(count)
                 .stream()
-                .map(FilmMapper::mapToFilmDto)
+                .map(film -> {
+                    RatingDto mpaDto = ratingService.getRatingById(film.getMpa().getId());
+                    Rating mpa = new Rating();
+                    mpa.setId(mpaDto.getId());
+                    mpa.setName(mpaDto.getName());
+                    film.setMpa(mpa);
+                    List<Genre> genres = genreService.getGenresForFilm(film.getId());
+                    Set<Director> directors = directorService.getDirectorsByFilmId(film.getId());
+                    film.setGenres(genres);
+                    film.setDirectors(directors);
+                    return FilmMapper.mapToFilmDto(film);
+                })
                 .collect(Collectors.toList());
     }
 
@@ -163,6 +177,11 @@ public class FilmService {
         directorService.getDirectorById(directorId);
         return filmStorage.getFilmsByDirectorId(directorId, sortBy).stream()
                 .map(film -> {
+                    RatingDto mpaDto = ratingService.getRatingById(film.getMpa().getId());
+                    Rating mpa = new Rating();
+                    mpa.setId(mpaDto.getId());
+                    mpa.setName(mpaDto.getName());
+                    film.setMpa(mpa);
                     List<Genre> genres = genreService.getGenresForFilm(film.getId());
                     Set<Director> directors = directorService.getDirectorsByFilmId(film.getId());
                     film.setGenres(genres);
@@ -175,6 +194,11 @@ public class FilmService {
     public List<FilmDto> getFilmsByQuery(String query, List<SearchBy> searchBys) {
         return ((FilmRepository) filmStorage).getFilmsByQuery(query, searchBys).stream()
                 .map(film -> {
+                    RatingDto mpaDto = ratingService.getRatingById(film.getMpa().getId());
+                    Rating mpa = new Rating();
+                    mpa.setId(mpaDto.getId());
+                    mpa.setName(mpaDto.getName());
+                    film.setMpa(mpa);
                     List<Genre> genres = genreService.getGenresForFilm(film.getId());
                     Set<Director> directors = directorService.getDirectorsByFilmId(film.getId());
                     film.setGenres(genres);
@@ -193,7 +217,18 @@ public class FilmService {
         }
 
         return commonFilms.stream()
-                .map(FilmMapper::mapToFilmDto)
+                .map(film -> {
+                    RatingDto mpaDto = ratingService.getRatingById(film.getMpa().getId());
+                    Rating mpa = new Rating();
+                    mpa.setId(mpaDto.getId());
+                    mpa.setName(mpaDto.getName());
+                    film.setMpa(mpa);
+                    List<Genre> genres = genreService.getGenresForFilm(film.getId());
+                    Set<Director> directors = directorService.getDirectorsByFilmId(film.getId());
+                    film.setGenres(genres);
+                    film.setDirectors(directors);
+                    return FilmMapper.mapToFilmDto(film);
+                })
                 .collect(Collectors.toList());
     }
 
@@ -201,7 +236,18 @@ public class FilmService {
     public List<FilmDto> getTopPopularFilms(int count, Long genreId, Integer year) {
         List<Film> films = filmRepository.findPopularFilmsByGenreAndYear(count, genreId, year);
         return films.stream()
-                .map(FilmMapper::mapToFilmDto)
+                .map(film -> {
+                    RatingDto mpaDto = ratingService.getRatingById(film.getMpa().getId());
+                    Rating mpa = new Rating();
+                    mpa.setId(mpaDto.getId());
+                    mpa.setName(mpaDto.getName());
+                    film.setMpa(mpa);
+                    List<Genre> genres = genreService.getGenresForFilm(film.getId());
+                    Set<Director> directors = directorService.getDirectorsByFilmId(film.getId());
+                    film.setGenres(genres);
+                    film.setDirectors(directors);
+                    return FilmMapper.mapToFilmDto(film);
+                })
                 .collect(Collectors.toList());
     }
 }
