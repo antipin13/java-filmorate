@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dal.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dal.dto.NewFilmRequest;
@@ -13,6 +14,7 @@ import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -51,10 +53,11 @@ public class FilmController {
         return Optional.ofNullable(filmService.getFilmById(id));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{film-id}")
     @ResponseStatus(HttpStatus.OK)
-    public boolean delete(@PathVariable Long id) {
-        return filmService.deleteFilm(id);
+    public ResponseEntity<Void> deleteFilm(@PathVariable ("film-id") Long filmId) {
+        filmService.deleteFilmAndRelations(filmId);
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}/like/{user-id}")
@@ -91,5 +94,10 @@ public class FilmController {
                             Arrays.toString(SortBy.values()).toLowerCase()));
         }
         return filmService.findFilmsByDirectorId(directorId, sortByEnum);
+    }
+
+    @GetMapping("/common")
+    public List<FilmDto> getCommonFilms(@RequestParam Long userId,@RequestParam Long friendId) {
+        return filmService.getCommonFilms(userId,friendId);
     }
 }
