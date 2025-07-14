@@ -262,8 +262,9 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             String q = String.format(FIND_FILMS_BY_QUERY, fltr);
             return findMany(q);
         }
+    }
 
-    public List<Film> findPopularFilmsByGenreAndYear(int limit, Long genreId, Integer year) {
+        public List<Film> findPopularFilmsByGenreAndYear(int limit, Long genreId, Integer year) {
         String sql = "SELECT f.*, COUNT(l.user_id) AS likes_count " +
                 "FROM film f " +
                 "LEFT JOIN likes l ON f.id = l.film_id " +
