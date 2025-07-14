@@ -12,13 +12,9 @@ import ru.yandex.practicum.filmorate.dal.dto.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dal.dto.RatingDto;
 import ru.yandex.practicum.filmorate.dal.dto.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.controller.SortBy;
-import ru.yandex.practicum.filmorate.dal.dto.*;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Rating;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -147,7 +143,8 @@ public class FilmService {
 
         filmStorage.addLike(filmId, userId);
 
-        eventRepository.addEvent(Instant.now().toEpochMilli(), userId, "LIKE", "ADD", filmId);
+        eventRepository.addEvent(Instant.now().toEpochMilli(), userId, EventType.LIKE.toString(),
+                Operation.ADD.toString(), filmId);
     }
 
     public void removeLike(Long filmId, Long userId) {
@@ -156,7 +153,8 @@ public class FilmService {
 
         filmStorage.removeLike(filmId, userId);
 
-        eventRepository.addEvent(Instant.now().toEpochMilli(), userId, "LIKE", "REMOVE", filmId);
+        eventRepository.addEvent(Instant.now().toEpochMilli(), userId, EventType.LIKE.toString(),
+                Operation.REMOVE.toString(), filmId);
     }
 
     public List<FilmDto> findFilmsByDirectorId(Long directorId, SortBy sortBy) {

@@ -10,6 +10,8 @@ import ru.yandex.practicum.filmorate.dal.ReviewRepository;
 import ru.yandex.practicum.filmorate.dal.dto.*;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.ReviewMapper;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -54,8 +56,8 @@ public class ReviewService {
         review = reviewRepository.create(review);
         log.info("Добавлен отзыв в БД {}", review);
 
-        eventRepository.addEvent(Instant.now().toEpochMilli(), userId, "REVIEW", "ADD",
-                review.getReviewId());
+        eventRepository.addEvent(Instant.now().toEpochMilli(), userId, EventType.REVIEW.toString(),
+                Operation.ADD.toString(), review.getReviewId());
 
         return ReviewMapper.mapToReviewDto(review);
     }
@@ -90,8 +92,8 @@ public class ReviewService {
 
         existingReview = reviewRepository.update(existingReview);
 
-        eventRepository.addEvent(Instant.now().toEpochMilli(), existingReview.getUserId(), "REVIEW",
-                "UPDATE", existingReview.getReviewId());
+        eventRepository.addEvent(Instant.now().toEpochMilli(), existingReview.getUserId(), EventType.REVIEW.toString(),
+                Operation.UPDATE.toString(), existingReview.getReviewId());
 
         return ReviewMapper.mapToReviewDto(existingReview);
     }
@@ -99,8 +101,8 @@ public class ReviewService {
     public boolean deleteReview(Long id) {
         Optional<Review> reviewOpt = reviewRepository.getReviewById(id);
         if (reviewOpt.isPresent()) {
-            eventRepository.addEvent(Instant.now().toEpochMilli(), reviewOpt.get().getUserId(), "REVIEW",
-                    "REMOVE", reviewOpt.get().getReviewId());
+            eventRepository.addEvent(Instant.now().toEpochMilli(), reviewOpt.get().getUserId(),
+                    EventType.REVIEW.toString(), Operation.REMOVE.toString(), reviewOpt.get().getReviewId());
 
             return reviewRepository.delete(reviewOpt.get());
         } else {
@@ -117,8 +119,8 @@ public class ReviewService {
 
         reviewRepository.addLike(reviewId);
 
-        eventRepository.addEvent(Instant.now().toEpochMilli(), userId, "LIKE",
-                "ADD", reviewId);
+        eventRepository.addEvent(Instant.now().toEpochMilli(), userId, EventType.LIKE.toString(),
+                Operation.ADD.toString(), reviewId);
     }
 
     public void addDislike(Long reviewId, Long userId) {
@@ -141,8 +143,8 @@ public class ReviewService {
 
         reviewRepository.removeLike(reviewId);
 
-        eventRepository.addEvent(Instant.now().toEpochMilli(), userId, "LIKE",
-                "REMOVE", reviewId);
+        eventRepository.addEvent(Instant.now().toEpochMilli(), userId, EventType.LIKE.toString(),
+                Operation.REMOVE.toString(), reviewId);
     }
 
     public void removeDislike(Long reviewId, Long userId) {
