@@ -219,6 +219,28 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
         };
     }
 
+    //метод который возвращает список популярных фильмов с фильтрацией по жанру и году
+    public List<Film> findPopularFilmsByGenreAndYear(int limit, Long genreId, Integer year) {
+        String sql = "SELECT f.*, COUNT(l.user_id) AS likes_count " +
+                "FROM film f " +
+                "LEFT JOIN likes l ON f.id = l.film_id " +
+                "JOIN film_genres fg ON f.id = fg.film_id " +
+                "WHERE 1=1 ";
+
+        if (genreId != null) {
+            sql += "AND fg.genre_id = " + genreId + " ";
+        }
+        if (year != null) {
+            sql += "AND EXTRACT(YEAR FROM f.release_date) = " + year + " ";
+        }
+
+        sql += "GROUP BY f.id " +
+                "ORDER BY likes_count DESC " +
+                "LIMIT " + limit;
+
+        return findMany(sql);
+    }
+
     public List<Long> getLikedFilmsByUser(Long userId) {
         String sql = "SELECT film_id FROM likes WHERE user_id = ?";
         return jdbc.queryForList(sql, Long.class, userId);
