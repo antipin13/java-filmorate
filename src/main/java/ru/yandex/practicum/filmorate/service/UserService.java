@@ -15,6 +15,7 @@ import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Operation;
+import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -34,13 +35,20 @@ public class UserService {
     final FriendshipRepository friendshipRepository;
     final FilmStorage filmStorage;
     final EventRepository eventRepository;
+    final GenreService genreService;
+    final RatingService ratingService;
+    final DirectorService directorService;
 
     public UserService(@Qualifier("dbStorage") UserStorage userStorage, FriendshipRepository friendshipRepository,
-                       @Qualifier("dbStorage") FilmStorage filmStorage, EventRepository eventRepository) {
+                       @Qualifier("dbStorage") FilmStorage filmStorage, EventRepository eventRepository,
+                       GenreService genreService, RatingService ratingService, DirectorService directorService) {
         this.userStorage = userStorage;
         this.friendshipRepository = friendshipRepository;
         this.filmStorage = filmStorage;
         this.eventRepository = eventRepository;
+        this.directorService = directorService;
+        this.ratingService = ratingService;
+        this.genreService = genreService;
     }
 
     public UserDto createUser(NewUserRequest request) {
@@ -85,7 +93,6 @@ public class UserService {
         }
         ((UserRepository) userStorage).deleteUserById(userId);
     }
-
 
 
     public UserDto addFriend(Long userId, Long friendId) {
@@ -185,12 +192,25 @@ public class UserService {
         if (bestMatchUser == null) return List.of();
 
         List<Long> recommendedIds = filmStorage.getRecommendedFilmIds(userId, bestMatchUser);
+
         return recommendedIds.stream()
                 .map(filmStorage::getFilmById)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
+                .peek(film -> {
+                    RatingDto mpaDto = ratingService.getRatingById(film.getMpa().getId());
+                    Rating mpa = new Rating();
+                    mpa.setId(mpaDto.getId());
+                    mpa.setName(mpaDto.getName());
+                    film.setMpa(mpa);
+
+                    film.setGenres(genreService.getGenresForFilm(film.getId()));
+                    film.setDirectors(directorService.getDirectorsByFilmId(film.getId()));
+                })
                 .map(FilmMapper::mapToFilmDto)
                 .collect(Collectors.toList());
+        //изменен данный метод, проблемы с крайним коммитом
     }
+
 
 }
