@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dal.EventRepository;
 import ru.yandex.practicum.filmorate.dal.ReviewRepository;
@@ -29,13 +30,15 @@ public class ReviewService {
     final FilmStorage filmStorage;
     final UserStorage userStorage;
     final EventRepository eventRepository;
+    final JdbcTemplate jdbcTemplate;
 
     public ReviewService(ReviewRepository reviewRepository, @Qualifier("dbStorage") FilmStorage filmStorage,
-                         @Qualifier("dbStorage") UserStorage userStorage, EventRepository eventRepository) {
+                         @Qualifier("dbStorage") UserStorage userStorage, EventRepository eventRepository, JdbcTemplate jdbcTemplate) {
         this.reviewRepository = reviewRepository;
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.eventRepository = eventRepository;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     public ReviewDto createReview(NewReviewRequest request) {
@@ -118,6 +121,9 @@ public class ReviewService {
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден с ID: " + userId));
 
         reviewRepository.addLike(reviewId);
+
+        String addLike = "INSERT INTO review_likes(user_id, review_id) VALUES (?, ?)";
+        jdbcTemplate.update(addLike, userId, reviewId);
     }
 
     public void addDislike(Long reviewId, Long userId) {

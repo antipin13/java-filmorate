@@ -85,3 +85,11 @@ CREATE TABLE IF NOT EXISTS event (
     FOREIGN KEY (user_id) REFERENCES users(id),
     PRIMARY KEY (event_id)
 );
+
+CREATE TABLE IF NOT EXISTS review_likes (
+    user_id INTEGER,
+    review_id INTEGER,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (review_id) REFERENCES review(id),
+    PRIMARY KEY (user_id, review_id)
+);
