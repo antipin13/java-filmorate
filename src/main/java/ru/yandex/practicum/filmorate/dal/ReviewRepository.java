@@ -19,9 +19,9 @@ public class ReviewRepository extends BaseRepository<Review> {
             "useful = ? WHERE id = ?";
     static final String DELETE_QUERY = "DELETE FROM review WHERE id = ?";
     static final String FIND_BY_ID_QUERY = "SELECT * FROM review WHERE id = ?";
-    static final String FIND_ALL_QUERY = "SELECT * FROM review";
-    static final String FIND_BY_ID_FILM_ALL = "SELECT * FROM review WHERE film_id = ?";
-    static final String FIND_BY_ID_FILM_LIMIT = "SELECT * FROM review WHERE film_id = ? LIMIT ?";
+    static final String FIND_ALL_QUERY = "SELECT * FROM review ORDER BY useful DESC";
+    static final String FIND_BY_ID_FILM_ALL = "SELECT * FROM review WHERE film_id = ? ORDER BY useful DESC";
+    static final String FIND_BY_ID_FILM_LIMIT = "SELECT * FROM review WHERE film_id = ? ORDER BY useful DESC LIMIT ?";
     static final String ADD_LIKE = "UPDATE review SET useful = useful + 1 WHERE id = ?";
     static final String ADD_DISLIKE = "UPDATE review SET useful = useful - 1 WHERE id = ?";
     static final String REMOVE_LIKE = "UPDATE review SET useful = useful - 1 WHERE id = ?";

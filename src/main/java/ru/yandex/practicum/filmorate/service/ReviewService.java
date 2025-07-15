@@ -130,8 +130,12 @@ public class ReviewService {
         userStorage.getUserById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден с ID: " + userId));
 
-        reviewRepository.removeLike(reviewId);
-        reviewRepository.addDislike(reviewId);
+        if (eventRepository.existsLikeOnReviewByUser(userId, reviewId)) {
+            reviewRepository.removeLike(reviewId);
+            reviewRepository.addDislike(reviewId);
+        } else {
+            reviewRepository.addDislike(reviewId);
+        }
     }
 
     public void removeLike(Long reviewId, Long userId) {
