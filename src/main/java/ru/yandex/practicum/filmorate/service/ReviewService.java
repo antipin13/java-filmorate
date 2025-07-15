@@ -118,9 +118,6 @@ public class ReviewService {
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден с ID: " + userId));
 
         reviewRepository.addLike(reviewId);
-
-        eventRepository.addEvent(Instant.now().toEpochMilli(), userId, EventType.LIKE.toString(),
-                Operation.ADD.toString(), reviewId);
     }
 
     public void addDislike(Long reviewId, Long userId) {
@@ -146,9 +143,6 @@ public class ReviewService {
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден с ID: " + userId));
 
         reviewRepository.removeLike(reviewId);
-
-        eventRepository.addEvent(Instant.now().toEpochMilli(), userId, EventType.LIKE.toString(),
-                Operation.REMOVE.toString(), reviewId);
     }
 
     public void removeDislike(Long reviewId, Long userId) {
