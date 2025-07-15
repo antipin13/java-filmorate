@@ -171,7 +171,7 @@ public class FilmService {
 
         Optional<User> userOpt = userStorage.getUserById(userId);
         if (userOpt.isEmpty()) {
-            throw new NotFoundException("Пользователь не найден с ID: " + filmId);
+            throw new NotFoundException("Пользователь не найден с ID: " + userId);
         }
 
         filmStorage.removeLike(filmId, userId);
