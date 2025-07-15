@@ -32,8 +32,9 @@ public class EventRepository extends BaseRepository<Event> {
     }
 
     public boolean existsLikeOnReviewByUser(Long userId, Long reviewId) {
+        String sql = "SELECT 1 FROM review_likes WHERE user_id = ? AND review_id = ?";
         try {
-            jdbc.queryForObject(EXIST_LIKE_ON_REVIEW_BY_USER, Integer.class, userId, reviewId);
+            jdbc.queryForObject(sql, Integer.class, userId, reviewId);
             return true;
         } catch (EmptyResultDataAccessException e) {
             return false;
