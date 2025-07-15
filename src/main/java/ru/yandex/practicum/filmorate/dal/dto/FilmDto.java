@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import ru.yandex.practicum.filmorate.model.Rating;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Set;
 
 @Data
@@ -16,6 +15,6 @@ public class FilmDto {
     LocalDate releaseDate;
     Integer duration;
     Rating mpa;
-    List<GenreDto> genres;
+    Set<GenreDto> genres;
     Set<DirectorDto> directors;
 }

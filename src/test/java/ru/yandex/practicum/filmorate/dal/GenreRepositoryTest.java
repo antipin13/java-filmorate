@@ -17,9 +17,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -47,7 +45,7 @@ class GenreRepositoryTest {
 
     @Test
     void getAllGenres() {
-        List<Genre> genres = genreRepository.findAll();
+        Set<Genre> genres = genreRepository.findAll();
 
         assertThat(genres.size()).isEqualTo(6);
     }
@@ -57,7 +55,7 @@ class GenreRepositoryTest {
         Optional<Genre> genre1 = genreRepository.findById(1L);
         Optional<Genre> genre2 = genreRepository.findById(2L);
 
-        List<Genre> genres = new ArrayList<>();
+        Set<Genre> genres = new HashSet<>();
         genres.add(genre1.get());
         genres.add(genre2.get());
 
@@ -74,7 +72,7 @@ class GenreRepositoryTest {
 
         Film createFilm = filmRepository.create(film);
 
-        List<Genre> filmGenres = genreRepository.findGenresByFilmId(createFilm.getId());
+        Set<Genre> filmGenres = genreRepository.findGenresByFilmId(createFilm.getId());
 
         assertThat(filmGenres.size()).isEqualTo(2);
     }

@@ -4,7 +4,6 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.dal.dto.*;
 import ru.yandex.practicum.filmorate.model.Film;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -31,9 +30,9 @@ public class FilmMapper {
         dto.setDuration(film.getDuration());
         dto.setMpa(film.getMpa());
 
-        List<GenreDto> genreDtos = film.getGenres().stream()
+        Set<GenreDto> genreDtos = film.getGenres().stream()
                 .map(GenreMapper::mapToGenreDto)
-                .toList();
+                .collect(Collectors.toSet());
         dto.setGenres(genreDtos);
 
         Set<DirectorDto> directors = film.getDirectors().stream()
