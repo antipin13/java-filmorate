@@ -35,6 +35,7 @@ public class GenreService {
         return genreRepository.findAll()
                 .stream()
                 .map(GenreMapper::mapToGenreDto)
+                .sorted()
                 .collect(Collectors.toList());
     }
 
