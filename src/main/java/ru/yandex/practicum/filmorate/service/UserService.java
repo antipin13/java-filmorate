@@ -209,6 +209,7 @@ public class UserService {
                 })
                 .map(FilmMapper::mapToFilmDto)
                 .collect(Collectors.toList());
+        //изменен данный метод, проблемы с крайним коммитом
     }
 
 
