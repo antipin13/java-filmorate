@@ -9,7 +9,6 @@ import ru.yandex.practicum.filmorate.dal.dto.EventDto;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.EventMapper;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
-
 import java.util.List;
 import java.util.stream.Collectors;
 

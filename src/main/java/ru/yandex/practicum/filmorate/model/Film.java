@@ -20,7 +20,7 @@ public class Film {
     LocalDate releaseDate;
     Integer duration;
     Rating mpa;
-    List<Genre> genres = new ArrayList<>();
+    Set<Genre> genres = new HashSet<>();
     Set<Director> directors = new HashSet<>();
 
     public Film() {

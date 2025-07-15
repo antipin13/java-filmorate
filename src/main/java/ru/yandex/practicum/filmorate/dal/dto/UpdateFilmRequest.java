@@ -7,7 +7,6 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Set;
 
 @Data
@@ -19,7 +18,7 @@ public class UpdateFilmRequest {
     LocalDate releaseDate;
     Integer duration;
     Rating mpa;
-    List<Genre> genres;
+    Set<Genre> genres;
     Set<Director> directors;
 
     public boolean hasId() {

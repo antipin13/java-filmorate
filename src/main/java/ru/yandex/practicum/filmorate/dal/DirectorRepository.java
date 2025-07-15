@@ -56,6 +56,11 @@ public class DirectorRepository extends BaseRepository<Director> {
             WHERE director_id = ?;
             """;
 
+    private static final String DELETE_FILMS_DIRECTOR_QUERY = """
+            DELETE FROM public.FILM_DIRECTORS
+            WHERE director_id = ?;
+            """;
+
     public DirectorRepository(JdbcTemplate jdbc, RowMapper<Director> mapper) {
         super(jdbc, mapper, Director.class);
     }
@@ -80,6 +85,7 @@ public class DirectorRepository extends BaseRepository<Director> {
     }
 
     public boolean delete(Director director) {
+        jdbc.update(DELETE_FILMS_DIRECTOR_QUERY, director.getId());
         return delete(DELETE_QUERY, director.getId());
     }
 

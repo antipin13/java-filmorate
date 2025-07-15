@@ -33,7 +33,8 @@ public class FilmMapper {
 
         List<GenreDto> genreDtos = film.getGenres().stream()
                 .map(GenreMapper::mapToGenreDto)
-                .toList();
+                .sorted()
+                .collect(Collectors.toList());
         dto.setGenres(genreDtos);
 
         Set<DirectorDto> directors = film.getDirectors().stream()

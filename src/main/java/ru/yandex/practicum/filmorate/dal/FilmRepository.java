@@ -36,7 +36,7 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             "rating_id = ? WHERE id = ?";
     static final String DELETE_QUERY = "DELETE FROM film WHERE id = ?";
     static final String FIND_ALL_QUERY = "SELECT * FROM film";
-    static final String FIND_POPULAR_QUERY = "SELECT f.*, COUNT(l.user_id) AS likes_count " +
+    static final String FIND_POPULAR_QUERY = "SELECT f.*, COUNT(l.film_id) AS likes_count " +
             "FROM film f LEFT JOIN likes l ON f.id = l.film_id GROUP BY f.id " +
             "ORDER BY likes_count DESC LIMIT ?";
     static final String INSERT_FILM_GENRE_QUERY = "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)";
@@ -125,7 +125,7 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
         for (Genre genre : genres) {
             genreMap.putIfAbsent(genre.getId(), genre);
         }
-        List<Genre> uniqueGenres = new ArrayList<>(genreMap.values());
+        Set<Genre> uniqueGenres = new HashSet<>(genreMap.values());
 
         film.setMpa(rating.get());
         film.setGenres(uniqueGenres);
@@ -165,7 +165,7 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
         );
 
         if (film.getGenres() != null) {
-            List<Genre> oldGenres = genreRepository.findGenresByFilmId(film.getId());
+            Set<Genre> oldGenres = genreRepository.findGenresByFilmId(film.getId());
             boolean isNeedToDeleteOldGenres = !oldGenres.isEmpty();
             if (isNeedToDeleteOldGenres) {
                 delete(DELETE_FILM_GENRE_QUERY, film.getId());

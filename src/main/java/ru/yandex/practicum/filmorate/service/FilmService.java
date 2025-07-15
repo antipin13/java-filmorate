@@ -72,7 +72,7 @@ public class FilmService {
         mpa.setName(mpaDto.getName());
         film.setMpa(mpa);
 
-        List<Genre> genres = genreService.getGenresForFilm(filmId);
+        Set<Genre> genres = genreService.getGenresForFilm(filmId);
         Set<Director> directors = directorService.getDirectorsByFilmId(filmId);
         film.setGenres(genres);
         film.setDirectors(directors);
@@ -89,7 +89,7 @@ public class FilmService {
                     mpa.setId(mpaDto.getId());
                     mpa.setName(mpaDto.getName());
                     film.setMpa(mpa);
-                    List<Genre> genres = genreService.getGenresForFilm(film.getId());
+                    Set<Genre> genres = genreService.getGenresForFilm(film.getId());
                     Set<Director> directors = directorService.getDirectorsByFilmId(film.getId());
                     film.setGenres(genres);
                     film.setDirectors(directors);
@@ -136,7 +136,7 @@ public class FilmService {
                     mpa.setId(mpaDto.getId());
                     mpa.setName(mpaDto.getName());
                     film.setMpa(mpa);
-                    List<Genre> genres = genreService.getGenresForFilm(film.getId());
+                    Set<Genre> genres = genreService.getGenresForFilm(film.getId());
                     Set<Director> directors = directorService.getDirectorsByFilmId(film.getId());
                     film.setGenres(genres);
                     film.setDirectors(directors);
@@ -164,8 +164,15 @@ public class FilmService {
     }
 
     public void removeLike(Long filmId, Long userId) {
-        filmStorage.getFilmById(filmId);
-        userStorage.getUserById(userId);
+        Optional<Film> filmOpt = filmStorage.getFilmById(filmId);
+        if (filmOpt.isEmpty()) {
+            throw new NotFoundException("Фильм не найден с ID: " + filmId);
+        }
+
+        Optional<User> userOpt = userStorage.getUserById(userId);
+        if (userOpt.isEmpty()) {
+            throw new NotFoundException("Пользователь не найден с ID: " + filmId);
+        }
 
         filmStorage.removeLike(filmId, userId);
 
@@ -182,7 +189,7 @@ public class FilmService {
                     mpa.setId(mpaDto.getId());
                     mpa.setName(mpaDto.getName());
                     film.setMpa(mpa);
-                    List<Genre> genres = genreService.getGenresForFilm(film.getId());
+                    Set<Genre> genres = genreService.getGenresForFilm(film.getId());
                     Set<Director> directors = directorService.getDirectorsByFilmId(film.getId());
                     film.setGenres(genres);
                     film.setDirectors(directors);
@@ -199,7 +206,7 @@ public class FilmService {
                     mpa.setId(mpaDto.getId());
                     mpa.setName(mpaDto.getName());
                     film.setMpa(mpa);
-                    List<Genre> genres = genreService.getGenresForFilm(film.getId());
+                    Set<Genre> genres = genreService.getGenresForFilm(film.getId());
                     Set<Director> directors = directorService.getDirectorsByFilmId(film.getId());
                     film.setGenres(genres);
                     film.setDirectors(directors);
@@ -223,7 +230,7 @@ public class FilmService {
                     mpa.setId(mpaDto.getId());
                     mpa.setName(mpaDto.getName());
                     film.setMpa(mpa);
-                    List<Genre> genres = genreService.getGenresForFilm(film.getId());
+                    Set<Genre> genres = genreService.getGenresForFilm(film.getId());
                     Set<Director> directors = directorService.getDirectorsByFilmId(film.getId());
                     film.setGenres(genres);
                     film.setDirectors(directors);
@@ -232,7 +239,6 @@ public class FilmService {
                 .collect(Collectors.toList());
     }
 
-    //Добавил публичный метод
     public List<FilmDto> getTopPopularFilms(int count, Long genreId, Integer year) {
         List<Film> films = filmRepository.findPopularFilmsByGenreAndYear(count, genreId, year);
         return films.stream()
@@ -242,7 +248,7 @@ public class FilmService {
                     mpa.setId(mpaDto.getId());
                     mpa.setName(mpaDto.getName());
                     film.setMpa(mpa);
-                    List<Genre> genres = genreService.getGenresForFilm(film.getId());
+                    Set<Genre> genres = genreService.getGenresForFilm(film.getId());
                     Set<Director> directors = directorService.getDirectorsByFilmId(film.getId());
                     film.setGenres(genres);
                     film.setDirectors(directors);
