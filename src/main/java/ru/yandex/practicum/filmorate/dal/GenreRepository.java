@@ -13,8 +13,8 @@ import java.util.Set;
 @Repository
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class GenreRepository extends BaseRepository<Genre> {
-    static final String FIND_BY_ID_QUERY = "SELECT * FROM genre WHERE id = ?";
-    static final String FIND_ALL_QUERY = "SELECT * FROM genre";
+    static final String FIND_BY_ID_QUERY = "SELECT * FROM genre WHERE id = ? ORDER BY id ASC";
+    static final String FIND_ALL_QUERY = "SELECT * FROM genre ORDER BY id ASC";
 
     public GenreRepository(JdbcTemplate jdbc, RowMapper<Genre> mapper) {
         super(jdbc, mapper, Genre.class);
@@ -29,7 +29,13 @@ public class GenreRepository extends BaseRepository<Genre> {
     }
 
     public Set<Genre> findGenresByFilmId(Long filmId) {
-        String searchGenresSql = "SELECT g.* FROM genre g JOIN film_genres fg ON g.id = fg.genre_id WHERE fg.film_id = ?";
+        String searchGenresSql = """
+                SELECT g.*
+                FROM genre g
+                JOIN film_genres fg ON g.id = fg.genre_id
+                WHERE fg.film_id = ?
+                ORDER BY g.id ASC
+                """;
         return new HashSet<>(findMany(searchGenresSql, filmId));
     }
 }
