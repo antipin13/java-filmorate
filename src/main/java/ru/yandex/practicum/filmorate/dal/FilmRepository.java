@@ -268,7 +268,7 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
         String sql = "SELECT f.*, COUNT(l.user_id) AS likes_count " +
                 "FROM film f " +
                 "LEFT JOIN likes l ON f.id = l.film_id " +
-                "JOIN film_genres fg ON f.id = fg.film_id " +
+                "LEFT JOIN film_genres fg ON f.id = fg.film_id " +
                 "WHERE 1=1 ";
 
         if (genreId != null) {
