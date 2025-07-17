@@ -148,7 +148,7 @@ public class FilmService {
     public boolean deleteFilmAndRelations(Long id) {
         Optional<Film> filmOpt = filmStorage.getFilmById(id);
         if (filmOpt.isEmpty()) {
-            throw new NotFoundException("Фильм не найден с ID: " + id);
+            throw new NotFoundException(String.format("Фильм не найден с ID: %d", id));
         }
         return ((FilmRepository) filmStorage).deleteFilmWithRelations(id);
     }
