@@ -112,17 +112,17 @@ public class FilmController {
                             Arrays.toString(SearchBy.values()).toLowerCase()));
         }
 
-        List<SearchBy> bys = new ArrayList<>();
+        List<SearchBy> searchCriteria = new ArrayList<>();
         searchBy.forEach(param -> {
             try {
                 SearchBy by = SearchBy.valueOf(param.toUpperCase());
-                bys.add(by);
+                searchCriteria.add(by);
             } catch (IllegalArgumentException e) {
                 throw new ValidationException(param,
                         String.format("Передан некорректный параметр фильтрации. Допустимые значения:%s",
                                 Arrays.toString(SearchBy.values()).toLowerCase()));
             }
         });
-        return filmService.getFilmsByQuery(query, bys);
+        return filmService.getFilmsByQuery(query, searchCriteria);
     }
 }
