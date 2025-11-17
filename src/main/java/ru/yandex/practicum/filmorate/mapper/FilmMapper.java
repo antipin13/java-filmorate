@@ -2,11 +2,11 @@ package ru.yandex.practicum.filmorate.mapper;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import ru.yandex.practicum.filmorate.dal.dto.FilmDto;
-import ru.yandex.practicum.filmorate.dal.dto.NewFilmRequest;
-import ru.yandex.practicum.filmorate.dal.dto.UpdateFilmRequest;
+import ru.yandex.practicum.filmorate.dal.dto.*;
 import ru.yandex.practicum.filmorate.model.Film;
-
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FilmMapper {
@@ -17,7 +17,8 @@ public class FilmMapper {
         film.setReleaseDate(request.getReleaseDate());
         film.setDuration(request.getDuration());
         film.setMpa(request.getMpa());
-
+        film.setGenres(request.getGenres());
+        film.setDirectors(request.getDirectors());
         return film;
     }
 
@@ -29,7 +30,17 @@ public class FilmMapper {
         dto.setReleaseDate(film.getReleaseDate());
         dto.setDuration(film.getDuration());
         dto.setMpa(film.getMpa());
-        dto.setGenres(film.getGenres());
+
+        List<GenreDto> genreDtos = film.getGenres().stream()
+                .map(GenreMapper::mapToGenreDto)
+                .sorted()
+                .collect(Collectors.toList());
+        dto.setGenres(genreDtos);
+
+        Set<DirectorDto> directors = film.getDirectors().stream()
+                .map(DirectorMapper::mapToDirectorDto)
+                .collect(Collectors.toSet());
+        dto.setDirectors(directors);
         return dto;
     }
 
@@ -55,7 +66,9 @@ public class FilmMapper {
         if (request.hasGenres()) {
             film.setGenres(request.getGenres());
         }
-
+        if (request.hasDirectors()) {
+            film.setDirectors(request.getDirectors());
+        }
         return film;
     }
 }

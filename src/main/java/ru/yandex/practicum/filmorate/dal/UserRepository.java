@@ -10,7 +10,6 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
-
 import java.sql.Date;
 import java.util.List;
 import java.util.Optional;
@@ -72,5 +71,13 @@ public class UserRepository extends BaseRepository<User> implements UserStorage 
     @Override
     public List<User> getUsers() {
         return findMany(FIND_ALL_QUERY);
+    }
+
+    public void deleteUserById(Long userId) {
+        jdbc.update("DELETE FROM friendships WHERE user_id = ? OR friend_id = ?", userId, userId);
+        jdbc.update("DELETE FROM likes WHERE user_id = ?", userId);
+        jdbc.update("DELETE FROM review WHERE user_id = ?", userId);
+        jdbc.update("DELETE FROM event WHERE user_id = ?", userId);
+        delete("DELETE FROM users WHERE id = ?", userId);
     }
 }

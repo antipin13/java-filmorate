@@ -5,8 +5,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dal.dto.*;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
@@ -21,6 +23,7 @@ import java.util.Optional;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserController {
     final UserService userService;
+    final EventService eventService;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
@@ -49,10 +52,11 @@ public class UserController {
         return Optional.ofNullable(userService.getUserById(id));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{user-id}")
     @ResponseStatus(HttpStatus.OK)
-    public boolean delete(@PathVariable Long id) {
-        return userService.deleteUser(id);
+    public ResponseEntity<Void> deleteUser(@PathVariable ("user-id") Long userId) {
+        userService.deleteUser(userId);
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}/friends/{friend-id}")
@@ -81,5 +85,17 @@ public class UserController {
     public List<UserDto> getCommonFriends(@PathVariable Long id,
                                           @PathVariable("friend-id") Long friendId) {
         return userService.getCommonFriend(id, friendId);
+    }
+
+    @GetMapping("/{id}/recommendations")
+    @ResponseStatus(HttpStatus.OK)
+    public List<FilmDto> getRecommendations(@PathVariable Long id) {
+        return userService.getRecommendations(id);
+    }
+
+    @GetMapping("/{id}/feed")
+    @ResponseStatus(HttpStatus.OK)
+    public List<EventDto> getFeeds(@PathVariable Long id) {
+        return eventService.getEventsByUserId(id);
     }
 }

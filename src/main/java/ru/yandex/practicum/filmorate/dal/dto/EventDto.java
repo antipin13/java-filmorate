@@ -2,18 +2,19 @@ package ru.yandex.practicum.filmorate.dal.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class GenreDto implements Comparable<GenreDto> {
-    @Override
-    public int compareTo(GenreDto o) {
-        return this.id.compareTo(o.id);
-    }
-
+@Builder
+public class EventDto {
+    Long timestamp;
+    Long userId;
+    String eventType;
+    String operation;
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    Long id;
-    String name;
+    Long eventId;
+    Long entityId;
 }

@@ -4,11 +4,9 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
-
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.*;
-
 
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -22,7 +20,8 @@ public class Film {
     LocalDate releaseDate;
     Integer duration;
     Rating mpa;
-    List<Genre> genres = new ArrayList<>();
+    Set<Genre> genres = new HashSet<>();
+    Set<Director> directors = new HashSet<>();
 
     public Film() {
 

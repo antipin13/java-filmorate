@@ -5,14 +5,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dal.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dal.dto.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dal.dto.UpdateFilmRequest;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.service.FilmService;
-
-import java.util.Collection;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/films")
@@ -20,6 +20,7 @@ import java.util.Optional;
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class FilmController {
+
     final FilmService filmService;
 
     @GetMapping
@@ -48,10 +49,11 @@ public class FilmController {
         return Optional.ofNullable(filmService.getFilmById(id));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{film-id}")
     @ResponseStatus(HttpStatus.OK)
-    public boolean delete(@PathVariable Long id) {
-        return filmService.deleteFilm(id);
+    public ResponseEntity<Void> deleteFilm(@PathVariable ("film-id") Long filmId) {
+        filmService.deleteFilmAndRelations(filmId);
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}/like/{user-id}")
@@ -70,8 +72,57 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
+    public List<FilmDto> getPopularFilms(@RequestParam(name = "count", defaultValue = "10") int count,
+                                         @RequestParam(name = "genreId", required = false) Long genreId,
+                                         @RequestParam(name = "year", required = false) Integer year) {
+        return filmService.getTopPopularFilms(count, genreId, year);
+    }
+
+    @GetMapping("/director/{director-id}")
     @ResponseStatus(HttpStatus.OK)
-    public Collection<FilmDto> findCountFilms(@RequestParam(defaultValue = "10") int count) {
-        return filmService.getPopularFilms(count);
+    public Collection<FilmDto> findFilmsByDirectorId(@PathVariable("director-id") Long directorId,
+                                                     @RequestParam String sortBy) {
+        SortBy sortByEnum;
+        try {
+            sortByEnum = SortBy.valueOf(sortBy.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new ValidationException(sortBy,
+                    String.format("Передан некорректный параметр сортировки. Допустимые значения:%s",
+                            Arrays.toString(SortBy.values()).toLowerCase()));
+        }
+        return filmService.findFilmsByDirectorId(directorId, sortByEnum);
+    }
+
+    @GetMapping("/common")
+    public List<FilmDto> getCommonFilms(@RequestParam Long userId,@RequestParam Long friendId) {
+        return filmService.getCommonFilms(userId,friendId);
+    }
+
+    @GetMapping("/search")
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<FilmDto> getFilmsByQuery(@RequestParam("query") String query,
+                                               @RequestParam(name = "by") Set<String> searchBy) {
+        if (query == null || query.isBlank()) {
+            return filmService.getPopularFilms(Integer.MAX_VALUE);
+        }
+
+        if (searchBy == null || searchBy.isEmpty()) {
+            throw new ValidationException("Параметр by не указан",
+                    String.format("Не передан параметр фильтрации. Допустимые значения:%s",
+                            Arrays.toString(SearchBy.values()).toLowerCase()));
+        }
+
+        List<SearchBy> searchCriteria = new ArrayList<>();
+        searchBy.forEach(param -> {
+            try {
+                SearchBy by = SearchBy.valueOf(param.toUpperCase());
+                searchCriteria.add(by);
+            } catch (IllegalArgumentException e) {
+                throw new ValidationException(param,
+                        String.format("Передан некорректный параметр фильтрации. Допустимые значения:%s",
+                                Arrays.toString(SearchBy.values()).toLowerCase()));
+            }
+        });
+        return filmService.getFilmsByQuery(query, searchCriteria);
     }
 }

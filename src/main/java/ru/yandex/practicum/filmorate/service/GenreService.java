@@ -10,7 +10,9 @@ import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.GenreMapper;
 import ru.yandex.practicum.filmorate.model.Genre;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -33,12 +35,11 @@ public class GenreService {
         return genreRepository.findAll()
                 .stream()
                 .map(GenreMapper::mapToGenreDto)
+                .sorted()
                 .collect(Collectors.toList());
     }
 
-    public List<Genre> getGenresForFilm(Long filmId) {
-        return genreRepository.findGenresByFilmId(filmId)
-                .stream()
-                .collect(Collectors.toList());
+    public Set<Genre> getGenresForFilm(Long filmId) {
+        return new HashSet<>(genreRepository.findGenresByFilmId(filmId));
     }
 }
